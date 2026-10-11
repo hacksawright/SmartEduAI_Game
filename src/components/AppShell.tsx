@@ -32,7 +32,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Network className="size-5" />
             </div>
             <div>
-              <div className="font-bold text-base leading-none">Kiến Thức Bay</div>
+              <div className="font-bold text-base leading-none">SmartEdu</div>
               <div className="text-xs text-muted-foreground mt-0.5">Lý thuyết đồ thị</div>
             </div>
           </Link>

@@ -32,7 +32,7 @@ function Landing() {
             <div className="size-9 rounded-xl bg-gradient-primary flex items-center justify-center text-primary-foreground">
               <Network className="size-5" />
             </div>
-            <div className="font-bold text-lg">Kiến Thức Bay</div>
+            <div className="font-bold text-lg">SmartEdu</div>
           </div>
           <div className="flex items-center gap-2">
             <Button asChild className="bg-gradient-primary hover:opacity-90"><Link to="/dashboard">Vào học ngay</Link></Button>
@@ -119,7 +119,7 @@ function Landing() {
       </section>
 
       <footer className="py-8 text-center text-sm text-muted-foreground">
-        © 2026 Kiến Thức Bay · Lý thuyết đồ thị
+        © 2026 SmartEdu · Lý thuyết đồ thị
       </footer>
     </div>
   );

@@ -1,84 +1,96 @@
-# Kiến Thức Bay — bản deploy Vercel
+# SmartEdu — Lý thuyết đồ thị
 
-Thư mục này là bản ứng dụng đã tách khỏi Lovable: cùng giao diện và các màn hình cũ (trang chủ, phó bản, đấu trường, diễn đàn, hồ sơ), nội dung game hóa chuyển sang **lý thuyết đồ thị**, và thêm phần luyện tập theo chương.
+SmartEdu là ứng dụng học tập theo hình thức game hóa, tập trung vào **lý thuyết đồ thị**. Người học có thể làm bài luyện theo chương, theo dõi tiến độ và điểm số, thi đấu, xem bảng xếp hạng tuần và nhận huy hiệu.
 
-Phần **Khóa học** cố ý để trống. Người phụ trách khóa học sẽ thêm nội dung sau.
+## Tính năng
 
-## Cách tính điểm tuần
+- **Luyện tập theo chương:** 8 chủ đề gồm nhập môn đồ thị, DFS/BFS, Euler–Hamilton, đồ thị phẳng và đồ thị hai phía, tô màu, đường đi ngắn nhất, cây khung và luồng cực đại.
+- **Điểm và xếp hạng tuần:** mỗi chương có 5 câu; mỗi câu đúng được 20 điểm. Điểm tuần cộng điểm cao nhất của từng chương trong tuần (tối đa 800 điểm). Tuần bắt đầu vào thứ Hai theo giờ Việt Nam.
+- **Phó bản và đấu trường:** các hoạt động học tập/thi đấu có tính điểm và tiến độ; đấu trường hỗ trợ đối thủ bot mô phỏng.
+- **Hồ sơ học tập:** theo dõi XP, cấp độ, chuỗi ngày học, thống kê và huy hiệu.
+- **Thảo luận:** trao đổi trong từng bài học.
+- **Khóa học:** hiện chưa có nội dung; dành cho người phụ trách khóa học bổ sung sau.
+- **Đăng nhập ẩn danh:** người học có thể bắt đầu mà không cần tạo tài khoản email; hồ sơ dùng tên hiển thị.
 
-- 8 chương, bám mục lục giáo trình: giới thiệu đồ thị, DFS/BFS, Euler–Hamilton, đồ thị phẳng và hai phía, tô màu, đường đi ngắn nhất, cây khung, luồng cực đại.
-- Mỗi chương có 5 câu. Mỗi câu đúng được **20 điểm** (tối đa 100 điểm/chương, 800 điểm/tuần).
-- Trong một tuần, mỗi chương chỉ lấy **lần điểm cao nhất**. Tổng tuần là cộng các điểm cao nhất đó.
-- Bảng xếp hạng hiện **họ tên** người dùng. Hạng 1 của tuần là người nhận giải.
-- Tuần tính theo giờ Việt Nam, bắt đầu thứ Hai.
-- Câu hỏi là bài luyện mới, viết theo chủ đề từng chương, không chép nguyên bài tập trong giáo trình. Sửa câu hỏi tại `src/lib/graph-chapters.ts`.
+## Công nghệ
 
-## 1. Database
+- React 19, TypeScript và Vite
+- TanStack Start/Router, Nitro
+- Tailwind CSS
+- Supabase (Auth và PostgreSQL)
 
-Ứng dụng dùng Supabase (PostgreSQL). Nếu project hiện tại đang nằm trên Lovable Cloud, hãy tạo project Supabase riêng rồi trỏ biến môi trường sang project đó.
+## Yêu cầu
 
-### Project mới
+- Node.js tương thích với Vite 7 (Node.js `20.19+` hoặc `22.12+`)
+- npm
+- Một project Supabase đã cấu hình
 
-1. Tạo project tại [supabase.com](https://supabase.com).
-2. Vào **Authentication → Sign In / Providers** và bật **Anonymous sign-ins**. Học sinh vào app bằng tên, không cần email.
-3. Vào **SQL Editor**, chạy lần lượt các file trong `supabase/migrations` theo tên file (thứ tự thời gian). File cuối cùng là `20261011090000_chapter_quiz_weekly.sql`.
-4. Lấy **Project URL** và **anon public key** trong **Project Settings → API**.
+## Chạy ứng dụng local
 
-### Project Supabase đã có schema cũ
+1. Cài dependencies:
 
-Chỉ cần chạy thêm file:
+   ```bash
+   npm install
+   ```
 
-`supabase/migrations/20261011090000_chapter_quiz_weekly.sql`
+2. Tạo file môi trường từ mẫu:
 
-File này tạo bảng `chapter_quiz_attempts`, bảng `weekly_prizes`, và bỏ biệt danh tự sinh cho tài khoản mới.
+   ```powershell
+   Copy-Item .env.example .env
+   ```
 
-### Khai báo giải thưởng của tuần
+   Điền thông tin Supabase vào `.env`:
 
-Trong SQL Editor:
+   ```env
+   SUPABASE_URL=https://<project-ref>.supabase.co
+   SUPABASE_PUBLISHABLE_KEY=<publishable-or-anon-key>
+   SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 
-```sql
-insert into public.weekly_prizes (week_start, title, description)
-values ('2026-10-05', 'Giải tuần', 'Một phần quà của lớp cho bạn hạng 1.')
-on conflict (week_start) do update
-set title = excluded.title,
-    description = excluded.description,
-    updated_at = now();
-```
+   VITE_SUPABASE_URL=https://<project-ref>.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=<publishable-or-anon-key>
+   ```
 
-`week_start` là thứ Hai của tuần đó, dạng `YYYY-MM-DD`. Nếu chưa có dòng nào, app vẫn hiện dòng giải mặc định.
+   Thay các giá trị mẫu bằng URL và key của project Supabase. Hai biến `VITE_*` cần trùng với URL và publishable/anon key tương ứng ở phía server. **Không đưa `SUPABASE_SERVICE_ROLE_KEY` vào biến `VITE_*`, mã client hoặc repository công khai**: service role key chỉ dành cho server.
 
-Điểm đang được ghi từ trình duyệt, cùng cách với phó bản và đấu trường hiện tại. Với lớp học nhỏ thì đủ dùng. Nếu sau này cần chặn sửa điểm, hãy chuyển phần chấm sang server function.
+3. Trong Supabase, bật **Anonymous Sign-Ins** tại **Authentication → Sign In / Providers**.
 
-## 2. Chạy local
+4. Chạy các migration trong `supabase/migrations` theo thứ tự tên file để tạo/cập nhật schema:
 
-```powershell
-cd vercel-app
-Copy-Item .env.example .env
-```
+   ```text
+   supabase/migrations/
+   ```
 
-Điền URL và anon key vào `.env`, rồi:
+   Có thể chạy nội dung các file lần lượt trong Supabase SQL Editor. Nếu project đã có schema từ các migration trước, chỉ chạy migration mới nhất khi phù hợp với trạng thái schema của project.
+
+5. Khởi động dev server:
+
+   ```bash
+   npm run dev
+   ```
+
+   Mở URL local được Vite in ra trong terminal.
+
+## Các lệnh khác
 
 ```bash
-npm install
-npm run dev
+npm run build       # Build production
+npm run preview     # Xem thử bản build production
+npm run lint        # Chạy ESLint
+npm run build:dev   # Build ở development mode
 ```
 
-## 3. Deploy Vercel
+## Deploy
 
-1. Đẩy repo lên Git (GitHub hoặc tương đương).
-2. Trên Vercel, **Import** repo.
-3. **Root Directory** chọn `vercel-app`.
-4. Framework Preset để trống (repo đã có `vercel.json`). Build command: `npm run build`.
-5. Thêm biến môi trường:
+Repo có cấu hình `vercel.json` và build bằng `npm run build`. Khi deploy lên Vercel, khai báo các biến môi trường Supabase như phần chạy local trong Project Settings → Environment Variables, sau đó deploy. Giữ `SUPABASE_SERVICE_ROLE_KEY` ở môi trường server; không dùng nó trong trình duyệt.
 
-```env
-SUPABASE_URL=
-SUPABASE_PUBLISHABLE_KEY=
-VITE_SUPABASE_URL=
-VITE_SUPABASE_PUBLISHABLE_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+## Cấu trúc chính
+
+```text
+src/
+  components/       # Giao diện dùng chung
+  integrations/     # Tích hợp Supabase
+  lib/              # Auth, điểm, huy hiệu và nội dung câu hỏi
+  routes/           # Các trang và route của ứng dụng
+supabase/
+  migrations/       # Migration schema và dữ liệu Supabase
 ```
-
-`VITE_*` phải trùng URL và anon key, vì trình duyệt chỉ đọc biến có tiền tố `VITE_`. Service role chỉ để trên server, không đưa vào code client.
-
-6. Deploy. Nitro nhận biết môi trường Vercel lúc build và xuất bản serverless.
