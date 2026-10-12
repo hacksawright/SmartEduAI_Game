@@ -1,0 +1,3 @@
+# Bản build của module Trò chơi (mã nguồn ở games/ltdt-games, build bằng npm run games:build)
+public/games/ltdt/** linguist-generated=true -diff
+src/features/games/ltdt-build.ts linguist-generated=true

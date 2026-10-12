@@ -9,7 +9,9 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "games:build": "node scripts/build-games.mjs",
+    "games:test": "npm --prefix games/ltdt-games run typecheck && npm --prefix games/ltdt-games test"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

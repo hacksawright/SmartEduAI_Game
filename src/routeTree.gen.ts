@@ -18,6 +18,7 @@ import { Route as AppCoursesRouteImport } from './routes/_app.courses'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppDungeonRouteImport } from './routes/_app.dungeon'
 import { Route as AppForumRouteImport } from './routes/_app.forum'
+import { Route as AppGamesRouteImport } from './routes/_app.games'
 import { Route as AppLeaderboardRouteImport } from './routes/_app.leaderboard'
 import { Route as AppPracticeRouteImport } from './routes/_app.practice'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
@@ -67,6 +68,11 @@ const AppForumRoute = AppForumRouteImport.update({
   path: '/forum',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGamesRoute = AppGamesRouteImport.update({
+  id: '/games',
+  path: '/games',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLeaderboardRoute = AppLeaderboardRouteImport.update({
   id: '/leaderboard',
   path: '/leaderboard',
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AppDashboardRoute
   '/dungeon': typeof AppDungeonRoute
   '/forum': typeof AppForumRoute
+  '/games': typeof AppGamesRoute
   '/leaderboard': typeof AppLeaderboardRoute
   '/practice': typeof AppPracticeRoute
   '/profile': typeof AppProfileRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AppDashboardRoute
   '/dungeon': typeof AppDungeonRoute
   '/forum': typeof AppForumRoute
+  '/games': typeof AppGamesRoute
   '/leaderboard': typeof AppLeaderboardRoute
   '/practice': typeof AppPracticeRoute
   '/profile': typeof AppProfileRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/dungeon': typeof AppDungeonRoute
   '/_app/forum': typeof AppForumRoute
+  '/_app/games': typeof AppGamesRoute
   '/_app/leaderboard': typeof AppLeaderboardRoute
   '/_app/practice': typeof AppPracticeRoute
   '/_app/profile': typeof AppProfileRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dungeon'
     | '/forum'
+    | '/games'
     | '/leaderboard'
     | '/practice'
     | '/profile'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dungeon'
     | '/forum'
+    | '/games'
     | '/leaderboard'
     | '/practice'
     | '/profile'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/_app/dashboard'
     | '/_app/dungeon'
     | '/_app/forum'
+    | '/_app/games'
     | '/_app/leaderboard'
     | '/_app/practice'
     | '/_app/profile'
@@ -250,6 +262,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppForumRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/games': {
+      id: '/_app/games'
+      path: '/games'
+      fullPath: '/games'
+      preLoaderRoute: typeof AppGamesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/leaderboard': {
       id: '/_app/leaderboard'
       path: '/leaderboard'
@@ -287,6 +306,7 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppDungeonRoute: typeof AppDungeonRoute
   AppForumRoute: typeof AppForumRoute
+  AppGamesRoute: typeof AppGamesRoute
   AppLeaderboardRoute: typeof AppLeaderboardRoute
   AppPracticeRoute: typeof AppPracticeRoute
   AppProfileRoute: typeof AppProfileRoute
@@ -299,6 +319,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppDungeonRoute: AppDungeonRoute,
   AppForumRoute: AppForumRoute,
+  AppGamesRoute: AppGamesRoute,
   AppLeaderboardRoute: AppLeaderboardRoute,
   AppPracticeRoute: AppPracticeRoute,
   AppProfileRoute: AppProfileRoute,

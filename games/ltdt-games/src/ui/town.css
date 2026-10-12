@@ -1,0 +1,408 @@
+/* Thành phố bùn: thế giới Kenney (docs/ART_DIRECTION.md mục 3.4). */
+
+.lg-play__stage--town {
+  padding: 0;
+}
+
+.lg-town {
+  background-color: #5fae4f;
+  background-repeat: repeat;
+  background-size: 64px 64px;
+}
+
+/* lớp sáng nhẹ để mái nhà xanh không chìm vào nền cỏ */
+.lg-town::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 45%, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.04) 70%);
+  pointer-events: none;
+}
+
+.lg-town__svg {
+  touch-action: manipulation;
+}
+
+/* ---------- Đường ---------- */
+
+.lg-road path:not(.lg-road__hit) {
+  fill: none;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.lg-road--interactive {
+  cursor: pointer;
+  outline: none;
+}
+
+.lg-road__hit {
+  fill: transparent;
+  stroke: none;
+  pointer-events: all !important;
+}
+
+.lg-road__focus,
+.lg-road__tone {
+  stroke: transparent;
+}
+
+.lg-road:focus-visible .lg-road__focus {
+  stroke: #0f172a;
+}
+
+.lg-road__edge {
+  stroke: #8b5a2b;
+  transition: stroke var(--t-slow) var(--ease-out);
+}
+
+.lg-road--interactive:hover .lg-road__edge {
+  stroke: #5c3a18;
+}
+
+.lg-road--paved .lg-road__edge {
+  stroke: #5f6773;
+}
+
+.lg-road--paved.lg-road--interactive:hover .lg-road__edge {
+  stroke: #374151;
+}
+
+.lg-road__stone--paving {
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  animation: lg-pave 520ms var(--ease-out) forwards;
+}
+
+@keyframes lg-pave {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.lg-road__stone--unpaving {
+  animation: lg-unpave 280ms ease-out forwards;
+}
+
+@keyframes lg-unpave {
+  to {
+    opacity: 0;
+  }
+}
+
+/* đường hỏng: ngập nước */
+.lg-road--broken .lg-road__edge {
+  stroke: #0369a1;
+}
+
+.lg-road__water {
+  stroke: #7cc8ec;
+}
+
+.lg-road__wave {
+  stroke: #e0f2fe;
+}
+
+/* viền nổi bật */
+.lg-road--cycle .lg-road__tone {
+  stroke: #f97316;
+}
+
+.lg-road--hint .lg-road__tone {
+  stroke: #fde047;
+  stroke-dasharray: calc(var(--px) * 12px) calc(var(--px) * 8px);
+  animation: lg-march 900ms linear infinite;
+}
+
+.lg-road--accept .lg-road__tone {
+  stroke: #5eead4;
+}
+
+.lg-road--reject .lg-road__tone {
+  stroke: #f87171;
+}
+
+.lg-road--frontier .lg-road__tone {
+  stroke: #fde047;
+  stroke-dasharray: calc(var(--px) * 8px) calc(var(--px) * 8px);
+}
+
+@keyframes lg-march {
+  to {
+    stroke-dashoffset: calc(var(--px) * -20px);
+  }
+}
+
+/* đường sinh viên đã lát, khi xem phát lại */
+.lg-road__mine-bg {
+  stroke: #134e4a;
+}
+
+.lg-road__mine {
+  stroke: #ffffff;
+}
+
+/* ---------- Thẻ giá ---------- */
+
+.lg-rtags,
+.lg-htags {
+  pointer-events: none;
+}
+
+/* thẻ giá nằm trên nhà: chạm vào thẻ cũng lát/bỏ lát con đường đó */
+.lg-rtags--tap .lg-rtag {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.lg-rtag rect {
+  fill: #ffffff;
+  stroke: #6b5536;
+  stroke-opacity: 0.55;
+  stroke-width: 1.5;
+}
+
+.lg-rtag text {
+  font-family: var(--f-mono);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-anchor: middle;
+  fill: #1f2937;
+}
+
+.lg-rtag__icon {
+  fill: none;
+  stroke: #374151;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lg-rtag--paved rect {
+  stroke: #4b5563;
+  stroke-opacity: 0.7;
+}
+
+.lg-rtag--broken rect {
+  fill: #e0f2fe;
+  stroke: #0369a1;
+  stroke-opacity: 1;
+}
+
+.lg-rtag--broken .lg-rtag__icon {
+  stroke: #0369a1;
+}
+
+.lg-rtag--cycle rect,
+.lg-rtag--reject rect {
+  stroke: #c2410c;
+  stroke-opacity: 1;
+  stroke-width: 2.5;
+}
+
+.lg-rtag--reject rect {
+  stroke: #b91c1c;
+}
+
+.lg-rtag--hint rect,
+.lg-rtag--accept rect {
+  stroke: #0f766e;
+  stroke-opacity: 1;
+  stroke-width: 2.5;
+}
+
+.lg-rtag--hint rect {
+  stroke: #b45309;
+}
+
+.lg-rtag__body--shake {
+  animation: lg-rtag-shake 340ms ease-out;
+}
+
+@keyframes lg-rtag-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+
+/* ---------- Nhà, cây, người dân ---------- */
+
+.lg-decor,
+.lg-walkers {
+  pointer-events: none;
+}
+
+/* nhà chặn chạm: gần nhà nhiều đường chụm lại, chạm vào đó dễ lát nhầm */
+.lg-houses {
+  pointer-events: auto;
+}
+
+.lg-house__yard {
+  fill: #ead7a4;
+  stroke: #c4a462;
+  stroke-width: calc(var(--px) * 1.5px);
+  transition:
+    fill var(--t-base) var(--ease-out),
+    stroke var(--t-base) var(--ease-out);
+}
+
+.lg-house--glow .lg-house__yard {
+  fill: #fde047;
+  stroke: #ca8a04;
+  stroke-width: calc(var(--px) * 2.5px);
+}
+
+.lg-house__body--pop {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: lg-house-pop 420ms var(--ease-pop);
+}
+
+@keyframes lg-house-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.12, 1.16);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.lg-house__tag circle {
+  fill: #ffffff;
+  stroke: #134e4a;
+  stroke-width: 2;
+}
+
+.lg-house__tag text {
+  font-family: var(--f-display);
+  font-size: 15px;
+  font-weight: 800;
+  text-anchor: middle;
+  fill: #134e4a;
+}
+
+/* ---------- Panel ---------- */
+
+.lg-osnote--warn {
+  background: var(--c-accent-soft);
+  border: 1.5px solid #fdba74;
+  color: #7c2d12;
+}
+
+/* phát lại Kruskal & Prim */
+.lg-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  align-self: flex-start;
+}
+
+.lg-tabs__tab {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font: 700 15px/1 var(--f-display);
+  color: var(--c-text-muted);
+  cursor: pointer;
+}
+
+.lg-tabs__tab[aria-selected="true"] {
+  background: #ffffff;
+  color: var(--c-text);
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.18);
+}
+
+.lg-tabs__tab:focus-visible {
+  outline: 3px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+.lg-replay__text {
+  min-height: 3em;
+  font-size: 15px;
+}
+
+.lg-replay__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lg-replay__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 0 9px;
+  border-radius: 999px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  font-family: var(--f-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.lg-replay__step--ok {
+  border-color: var(--c-primary);
+  background: var(--c-success-soft);
+  color: var(--c-primary-strong);
+}
+
+.lg-replay__step--no {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #b91c1c;
+  text-decoration: line-through;
+}
+
+.lg-replay__step--current {
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--c-accent);
+}
+
+.lg-replay__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lg-replay__compare {
+  font-size: 14px;
+}
+
+.lg-replay__compare b {
+  font-family: var(--f-mono);
+}
+
+.lg-osnote__icon {
+  vertical-align: -3px;
+  margin-right: 2px;
+  color: var(--c-accent-strong);
+}
+
+@media (max-width: 479px) {
+  .lg-hide-narrow {
+    display: none;
+  }
+}

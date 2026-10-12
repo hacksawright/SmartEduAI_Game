@@ -1,0 +1,653 @@
+/* Thành phần riêng của từng game trong panel: bảng nhãn Dijkstra, thứ tự Greedy, ma trận… */
+
+/* ---------- Chip tên đỉnh ---------- */
+
+.lg-vchip {
+  display: inline-grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border-radius: 15px;
+  border: 2px solid var(--v-idle-stroke);
+  background: var(--v-idle-fill);
+  color: var(--v-text);
+  font-family: var(--f-display);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.lg-vchip--btn {
+  min-width: var(--tap);
+  height: 36px;
+  border-radius: 18px;
+  border-color: var(--c-border-strong);
+  background: #fff;
+  cursor: pointer;
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+
+.lg-vchip--btn:hover {
+  background: var(--c-accent-soft);
+  border-color: var(--c-accent);
+}
+
+.lg-vchip--btn:active {
+  transform: scale(0.94);
+}
+
+.lg-vchip--btn:focus-visible {
+  outline: 3px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .lg-vchip--btn {
+    height: var(--tap);
+    border-radius: 22px;
+  }
+}
+
+/* ---------- Ô số liệu (Thành phố bùn, Greedy) ---------- */
+
+.lg-mstats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lg-mstats__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+}
+
+.lg-mstats__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.lg-mstats__value {
+  font-family: var(--f-mono);
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-text);
+}
+
+.lg-mstats__cell--ok {
+  background: var(--c-success-soft);
+  border-color: #5eead4;
+}
+
+.lg-mstats__cell--warn {
+  background: var(--c-accent-soft);
+  border-color: #fdba74;
+}
+
+.lg-mstats__unit {
+  font-family: var(--f-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+/* ---------- Dijkstra: ô nhập cập nhật nhãn ---------- */
+
+.lg-relax {
+  padding: 6px 10px 8px;
+  border-radius: 16px;
+  background: #fffbeb;
+  border: 1.5px solid #fcd34d;
+}
+
+.lg-relax__table th,
+.lg-relax__table td {
+  border-bottom-color: #fde68a;
+}
+
+.lg-relax__table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.lg-relax__table td,
+.lg-relax__table tbody th {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.lg-relax__input {
+  width: 76px;
+  min-height: 40px;
+  text-align: center;
+}
+
+.lg-relax__input[readonly] {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.lg-relax__pred--new {
+  color: var(--c-accent-strong);
+  font-weight: 700;
+}
+
+/* ---------- Dijkstra: bảng nhãn ---------- */
+
+.lg-labels tbody tr {
+  transition: background-color var(--t-base) var(--ease-out);
+}
+
+.lg-labels tbody th,
+.lg-labels td {
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+/* màn cảm ứng: các nút chọn đỉnh trong bảng cách nhau 8 px */
+@media (pointer: coarse) {
+  .lg-labels tbody th,
+  .lg-labels td {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+}
+
+.lg-labels td.lg-mono {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.lg-labels__row--fixed td,
+.lg-labels__row--fixed th {
+  background: #f0fdfa;
+}
+
+.lg-labels__row--fixed .lg-vchip {
+  background: var(--v-done-fill);
+  border-color: var(--v-done-stroke);
+  color: var(--v-done-text);
+}
+
+.lg-labels__row--current td,
+.lg-labels__row--current th {
+  background: var(--c-accent-soft);
+}
+
+.lg-labels__row--current .lg-vchip {
+  border-color: var(--v-current-stroke);
+}
+
+.lg-labels__row--mark .lg-vchip {
+  box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--c-accent);
+}
+
+.lg-labels__d--changed {
+  color: var(--c-accent-strong);
+}
+
+.lg-labels__state {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-primary-strong);
+}
+
+/* ∞ trong bảng: chữ thân bài, to hơn chữ số mono */
+.lg-inf {
+  font-family: var(--f-body);
+  font-size: 1.3em;
+  font-weight: 600;
+  line-height: 0.8;
+}
+
+/* ---------- Một nét vẽ ---------- */
+
+.lg-stroke {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+}
+
+.lg-stroke__mistakes {
+  font-size: 13px;
+  min-height: 24px;
+}
+
+.lg-stroke__bar {
+  height: 10px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.lg-stroke__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--e-result);
+  transition: width var(--t-base) var(--ease-out);
+}
+
+.lg-stroke__path {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--c-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.lg-osnote {
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  font-size: 14px;
+  font-weight: 500;
+  animation: lg-rise var(--t-base) var(--ease-out);
+}
+
+.lg-osnote--legend {
+  padding: 0;
+  background: none;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--c-text-muted);
+  animation: none;
+}
+
+.lg-claim {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  border-radius: 16px;
+  background: var(--c-accent-soft);
+  border: 1.5px solid #fdba74;
+}
+
+.lg-claim .lg-q__kicker {
+  color: var(--c-accent-strong);
+}
+
+.lg-claim__picked {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.lg-claim__chip {
+  border-color: var(--c-accent);
+  background: #fff;
+}
+
+.lg-claim__toggle[aria-pressed="true"] {
+  border-color: var(--c-accent);
+  background: var(--c-accent);
+  color: #fff;
+}
+
+/* sông của màn Bảy cây cầu */
+.lg-river path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lg-river__bank {
+  stroke: #93cbe6;
+  stroke-width: 62;
+}
+
+.lg-river__water {
+  stroke: #cfeaf7;
+  stroke-width: 54;
+}
+
+.lg-river__wave {
+  stroke: #9fd0e8;
+  stroke-width: 2.5;
+}
+
+/* ---------- Xếp thứ tự cho Greedy ---------- */
+
+.lg-order {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lg-order__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 4px 6px 2px;
+  border-radius: 12px;
+  border: 2px dashed var(--c-border-strong);
+  background: #fff;
+  color: var(--v-text);
+  transition:
+    background-color var(--t-base) var(--ease-out),
+    border-color var(--t-base) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+}
+
+.lg-order__cell--picked {
+  border-style: solid;
+  border-color: var(--c-primary-strong);
+  background: var(--c-primary-soft);
+  color: var(--c-primary-strong);
+}
+
+.lg-order__cell--colored {
+  border-style: solid;
+  border-color: rgb(15 23 42 / 0.35);
+  animation: lg-pop-in var(--t-base) var(--ease-pop);
+}
+
+.lg-order__cell--next {
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 4px var(--c-accent);
+}
+
+.lg-order__cell--hint {
+  outline: 2px dashed var(--c-accent);
+  outline-offset: 2px;
+}
+
+.lg-order__v {
+  font-family: var(--f-display);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.lg-order__tag {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.lg-glog,
+.lg-runs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lg-glog__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  animation: lg-rise var(--t-base) var(--ease-out);
+}
+
+.lg-glog__v {
+  display: inline-grid;
+  place-items: center;
+  min-width: 30px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 13px;
+  border: 1.5px solid rgb(15 23 42 / 0.3);
+  font-family: var(--f-display);
+  font-weight: 700;
+}
+
+.lg-glog__why {
+  color: var(--c-text-muted);
+}
+
+.lg-glog__c {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lg-runs__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 14px;
+}
+
+.lg-runs__n {
+  font-weight: 700;
+}
+
+.lg-runs__order {
+  color: var(--c-text-muted);
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 479px) {
+  .lg-mstats__cell {
+    padding: 5px 9px;
+  }
+
+  .lg-mstats__value {
+    font-size: 17px;
+  }
+
+  .lg-order {
+    gap: 4px;
+  }
+
+  .lg-order__cell {
+    min-width: 38px;
+    padding: 3px 4px 1px;
+  }
+
+  .lg-order__v {
+    font-size: 16px;
+  }
+
+  .lg-order__tag {
+    font-size: 10px;
+  }
+}
+
+/* ---------- Dịch ma trận ---------- */
+
+.lg-timer {
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.12);
+}
+
+.lg-timer .lg-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+.lg-mx-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.lg-mx {
+  border-collapse: separate;
+  border-spacing: 4px;
+  margin: -4px;
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.lg-mx th {
+  min-width: 28px;
+  height: 28px;
+  padding: 0;
+  font-family: var(--f-display);
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--c-text-muted);
+  border-radius: 8px;
+}
+
+.lg-mx .lg-mx__ecol {
+  font-family: var(--f-mono);
+  font-size: 13px;
+}
+
+.lg-mx__cell {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 9px;
+  background: #f1f5f9;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  /* số 0: nhạt hơn số 1 nhưng vẫn đạt 4.5:1 trên nền ô */
+  color: #475569;
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out);
+}
+
+.lg-mx__cell--on {
+  background: var(--c-primary-soft);
+  color: var(--c-primary-strong);
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1.5px var(--c-primary);
+}
+
+.lg-mx__cell--diag {
+  background: repeating-linear-gradient(135deg, #f1f5f9 0 5px, #e2e8f0 5px 10px);
+  color: #94a3b8;
+}
+
+.lg-mx__cell--hint {
+  outline: 2px dashed var(--c-accent);
+  outline-offset: 1px;
+}
+
+/* hàng của đỉnh đang chọn */
+.lg-mx__row--hi th {
+  background: var(--c-accent-soft);
+  color: var(--c-accent-strong);
+}
+
+.lg-mx__row--hi .lg-mx__cell {
+  box-shadow: inset 0 0 0 2px var(--c-accent);
+}
+
+.lg-mx__btn {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.lg-mx__btn:hover {
+  background: rgb(15 23 42 / 0.06);
+}
+
+.lg-mx__btn:active {
+  transform: scale(0.94);
+}
+
+.lg-mx__btn:focus-visible {
+  outline: 3px solid var(--c-accent);
+  outline-offset: 1px;
+}
+
+/* ma trận để điền (Đồ thị → ma trận): mỗi ô là vùng chạm 44 px, cách nhau 8 px */
+.lg-mx--edit {
+  border-spacing: var(--s-2);
+  margin: calc(-1 * var(--s-2));
+}
+
+.lg-mx--edit .lg-mx__cell {
+  width: var(--tap);
+  height: var(--tap);
+}
+
+.lg-mx--edit .lg-mx__btn {
+  min-height: var(--tap);
+}
+
+.lg-alist {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lg-alist__row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  background: #f8fafc;
+}
+
+.lg-alist__row--hi {
+  border-color: var(--c-accent);
+  background: var(--c-accent-soft);
+}
+
+.lg-alist__v {
+  min-width: 20px;
+  font-family: var(--f-display);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.lg-alist__sep {
+  margin-left: 1px;
+  color: var(--c-text-muted);
+}
+
+.lg-alist__items {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 479px) {
+  .lg-mx__cell {
+    width: 36px;
+    height: 36px;
+  }
+
+  .lg-mx__btn {
+    min-height: 36px;
+  }
+}

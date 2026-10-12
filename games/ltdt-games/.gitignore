@@ -1,0 +1,7 @@
+node_modules
+dist
+dist-embed
+.mock-data
+test-results
+playwright-report
+*.log

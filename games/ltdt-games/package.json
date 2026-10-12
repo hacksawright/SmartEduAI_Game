@@ -1,0 +1,36 @@
+{
+  "name": "smartedu-ltdt-games",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Game hóa môn Lý thuyết đồ thị – SmartEduAI: 6 game, 45 màn (Dịch ma trận, Tôi là thuật toán, Một nét vẽ, Xếp thứ tự cho Greedy, Tôi là Dijkstra, Thành phố bùn)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit -p tsconfig.json && vite build",
+    "build:embed": "tsc --noEmit -p tsconfig.json && vite build --config vite.embed.config.ts",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test --project=desktop --project=mobile",
+    "shots": "playwright test --project=screens"
+  },
+  "dependencies": {
+    "@fontsource/baloo-2": "^5.3.0",
+    "@fontsource/be-vietnam-pro": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "lucide-react": "^1.50.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  }
+}

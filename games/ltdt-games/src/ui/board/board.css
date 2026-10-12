@@ -1,0 +1,459 @@
+/* Bàn cờ đồ thị. Nét và chữ dùng calc(var(--px) * Npx) để luôn đúng N px trên màn hình. */
+
+.lg-board {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.lg-board__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.lg-board__svg--drag {
+  touch-action: none;
+}
+
+/* ---------- Cạnh ---------- */
+
+.lg-e__line {
+  fill: none;
+  stroke: var(--e-idle);
+  stroke-width: calc(var(--px) * 3px);
+  stroke-linecap: round;
+  transition:
+    stroke var(--t-base) var(--ease-out),
+    stroke-width var(--t-base) var(--ease-out),
+    opacity var(--t-base) var(--ease-out);
+}
+
+.lg-e__arrow {
+  fill: var(--e-idle);
+  transition: fill var(--t-base) var(--ease-out);
+}
+
+.lg-e--result .lg-e__line {
+  stroke: var(--e-result);
+  stroke-width: calc(var(--px) * 6px);
+}
+
+.lg-e--result .lg-e__arrow,
+.lg-e--drawn .lg-e__arrow {
+  fill: var(--e-result);
+}
+
+.lg-e--drawn .lg-e__line {
+  stroke: var(--e-result);
+  stroke-width: calc(var(--px) * 7px);
+}
+
+/* đang chạy hiệu ứng vẽ: nét nền giữ màu cũ, nét vẽ phủ dần lên */
+.lg-e--drawing .lg-e__line {
+  stroke: var(--e-idle);
+  stroke-width: calc(var(--px) * 3px);
+}
+
+.lg-e--dim .lg-e__line {
+  stroke: var(--e-dim);
+}
+
+.lg-e--dim .lg-e__arrow {
+  fill: var(--e-dim);
+}
+
+.lg-e--active .lg-e__line {
+  stroke: var(--c-accent);
+  stroke-width: calc(var(--px) * 5px);
+}
+
+.lg-e--active .lg-e__arrow {
+  fill: var(--c-accent);
+}
+
+.lg-e--hint .lg-e__line {
+  stroke: var(--c-accent);
+  stroke-width: calc(var(--px) * 5px);
+  stroke-dasharray: calc(var(--px) * 10px) calc(var(--px) * 7px);
+}
+
+.lg-e--hint .lg-e__arrow {
+  fill: var(--c-accent);
+}
+
+.lg-e--error .lg-e__line {
+  stroke: var(--c-error);
+  stroke-width: calc(var(--px) * 5px);
+}
+
+.lg-e--error .lg-e__arrow {
+  fill: var(--c-error);
+}
+
+.lg-e--ghost .lg-e__line {
+  stroke: var(--e-idle);
+  stroke-width: calc(var(--px) * 2.5px);
+  stroke-dasharray: calc(var(--px) * 2px) calc(var(--px) * 8px);
+}
+
+.lg-e__draw {
+  fill: none;
+  stroke: var(--e-result);
+  stroke-width: calc(var(--px) * 7px);
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  animation: lg-draw var(--t-slow) var(--ease-out) forwards;
+}
+
+@keyframes lg-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.lg-e__flow {
+  fill: none;
+  stroke: var(--c-accent);
+  stroke-width: calc(var(--px) * 6px);
+  stroke-linecap: round;
+  stroke-dasharray: 0.14 2;
+  stroke-dashoffset: 0.14;
+  opacity: 0;
+  animation: lg-flow 620ms var(--ease-out) forwards;
+}
+
+@keyframes lg-flow {
+  0% {
+    stroke-dashoffset: 0.14;
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -0.92;
+    opacity: 0;
+  }
+}
+
+/* ---------- Nhãn trọng số ---------- */
+
+.lg-elabel rect {
+  fill: #fff;
+  stroke: #94a3b8;
+  stroke-width: calc(var(--px) * 1.5px);
+  transition:
+    fill var(--t-base) var(--ease-out),
+    stroke var(--t-base) var(--ease-out);
+}
+
+.lg-elabel__text {
+  font-family: var(--f-mono);
+  font-weight: 600;
+  font-size: calc(var(--px) * 14px);
+  font-variant-numeric: tabular-nums;
+  text-anchor: middle;
+  fill: var(--c-text);
+}
+
+.lg-elabel--active rect {
+  fill: var(--c-accent-soft);
+  stroke: var(--c-accent);
+  stroke-width: calc(var(--px) * 2px);
+}
+
+.lg-elabel--active .lg-elabel__text {
+  fill: #9a3412;
+}
+
+.lg-elabel--result rect {
+  stroke: var(--e-result);
+}
+
+.lg-elabel--muted {
+  opacity: 0.55;
+}
+
+/* ---------- Đỉnh ---------- */
+
+.lg-v--interactive {
+  cursor: pointer;
+}
+
+.lg-v--interactive.lg-v--disabled {
+  cursor: default;
+}
+
+.lg-v:focus,
+.lg-v:focus-visible {
+  outline: none;
+}
+
+.lg-v__hit {
+  fill: transparent;
+}
+
+.lg-v__disc {
+  fill: var(--v-idle-fill);
+  stroke: var(--v-idle-stroke);
+  stroke-width: calc(var(--px) * 2px);
+  transition:
+    fill var(--t-base) var(--ease-out),
+    stroke var(--t-base) var(--ease-out),
+    stroke-width var(--t-base) var(--ease-out);
+}
+
+.lg-v__label {
+  font-family: var(--f-display);
+  font-weight: 700;
+  fill: var(--v-text);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.lg-v--queued .lg-v__disc {
+  fill: var(--v-queued-fill);
+  stroke: var(--v-queued-stroke);
+  stroke-width: calc(var(--px) * 3px);
+  stroke-dasharray: calc(var(--px) * 7px) calc(var(--px) * 4px);
+}
+
+.lg-v--current .lg-v__disc {
+  stroke: var(--v-current-stroke);
+  stroke-width: calc(var(--px) * 4px);
+  stroke-dasharray: none;
+}
+
+.lg-v--done .lg-v__disc {
+  fill: var(--v-done-fill);
+  stroke: var(--v-done-stroke);
+  stroke-width: calc(var(--px) * 3px);
+}
+
+.lg-v--done .lg-v__label {
+  fill: var(--v-done-text);
+}
+
+.lg-v--dim {
+  opacity: 0.4;
+}
+
+.lg-v__focus {
+  fill: none;
+  stroke: var(--c-accent);
+  stroke-width: calc(var(--px) * 3px);
+  opacity: 0;
+  transition: opacity var(--t-fast) var(--ease-out);
+}
+
+.lg-v--interactive:not(.lg-v--disabled):hover .lg-v__focus {
+  opacity: 0.35;
+}
+
+.lg-v:focus-visible .lg-v__focus {
+  opacity: 1;
+}
+
+.lg-v__pulse {
+  fill: none;
+  stroke: var(--c-accent);
+  stroke-width: calc(var(--px) * 3px);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lg-pulse 1.6s var(--ease-out) infinite;
+  pointer-events: none;
+}
+
+@keyframes lg-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+
+.lg-root[data-motion="reduced"] .lg-v__pulse {
+  animation: none !important;
+  transform: scale(1.32);
+  opacity: 0.7;
+}
+
+.lg-v__ring {
+  fill: none;
+  stroke-width: calc(var(--px) * 3px);
+  pointer-events: none;
+}
+
+.lg-v__ring--hint {
+  stroke: var(--c-accent);
+  stroke-dasharray: calc(var(--px) * 6px) calc(var(--px) * 4px);
+}
+
+.lg-v__ring--select {
+  stroke: var(--c-primary-strong);
+  stroke-width: calc(var(--px) * 4px);
+}
+
+.lg-v__ring--evidence {
+  stroke: var(--c-accent);
+  stroke-width: calc(var(--px) * 4px);
+}
+
+.lg-v__ring--error {
+  stroke: var(--c-error);
+  stroke-width: calc(var(--px) * 4px);
+}
+
+.lg-v__ring--start {
+  stroke: var(--c-primary-strong);
+  stroke-dasharray: calc(var(--px) * 3px) calc(var(--px) * 4px);
+}
+
+.lg-v__ring--pending {
+  stroke: var(--c-accent);
+  stroke-width: calc(var(--px) * 4px);
+  stroke-dasharray: calc(var(--px) * 8px) calc(var(--px) * 5px);
+}
+
+.lg-v__body--pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lg-pop 300ms var(--ease-pop);
+}
+
+@keyframes lg-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.14);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.lg-v__body--shake {
+  animation: lg-vshake 320ms ease-out;
+}
+
+@keyframes lg-vshake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(calc(var(--px) * -5px));
+  }
+  50% {
+    transform: translateX(calc(var(--px) * 4px));
+  }
+  75% {
+    transform: translateX(calc(var(--px) * -2px));
+  }
+}
+
+.lg-v__check circle {
+  fill: #fff;
+  stroke: var(--v-done-stroke);
+  stroke-width: 2;
+}
+
+.lg-v__check path {
+  fill: none;
+  stroke: var(--v-done-stroke);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lg-v__badge {
+  pointer-events: none;
+}
+
+.lg-v__badge rect {
+  fill: #92400e;
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.lg-v__badge text {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-anchor: middle;
+  fill: #fff;
+}
+
+/* ∞ của JetBrains Mono rất nhỏ: dùng chữ thân bài, cỡ lớn hơn */
+.lg-v__badge--inf text {
+  font-family: var(--f-body);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.lg-v__badge--degree rect,
+.lg-v__badge--dist rect {
+  fill: #fff;
+  stroke: var(--c-border-strong);
+  stroke-width: 1.5;
+}
+
+.lg-v__badge--degree text,
+.lg-v__badge--dist text {
+  fill: var(--c-text);
+}
+
+.lg-v__badge--odd rect,
+.lg-v__badge--dist-changed rect {
+  fill: var(--c-accent-soft);
+  stroke: var(--c-accent);
+  stroke-width: 2;
+}
+
+.lg-v__badge--odd text,
+.lg-v__badge--dist-changed text {
+  fill: #9a3412;
+}
+
+.lg-v__badge--select rect {
+  fill: var(--c-primary-strong);
+  stroke: #fff;
+}
+
+.lg-v__badge--dist-fixed rect {
+  fill: var(--c-primary-strong);
+  stroke: #fff;
+}
+
+.lg-v__badge--dist-fixed text {
+  fill: #fff;
+}
+
+/* ---------- Hình thu nhỏ ---------- */
+
+.lg-board--mini .lg-e__line {
+  stroke-width: calc(var(--px) * 2px);
+}
+
+.lg-board--mini .lg-e--result .lg-e__line,
+.lg-board--mini .lg-e--drawn .lg-e__line {
+  stroke-width: calc(var(--px) * 3.5px);
+}
+
+.lg-board--mini .lg-v__disc {
+  stroke-width: calc(var(--px) * 1.5px);
+}

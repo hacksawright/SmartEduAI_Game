@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { getLevelProgress, getLevelTitle, vnGreeting } from "@/lib/math-utils";
 import { displayName } from "@/lib/week";
-import { Flame, Swords, BookOpen, Trophy, ChevronRight, Sparkles, ClipboardList } from "lucide-react";
+import { Flame, Swords, BookOpen, Trophy, ChevronRight, Sparkles, ClipboardList, Gamepad2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/_app/dashboard")({
@@ -99,6 +99,23 @@ function Dashboard() {
             <p className="text-sm text-muted-foreground mt-1">8 chương lý thuyết đồ thị. Mỗi câu đúng 20 điểm, lấy điểm cao nhất trong tuần.</p>
             <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-sm font-semibold">
               Làm bài lấy điểm
+            </div>
+          </div>
+        </Link>
+
+        {/* Trò chơi: module riêng, điểm và huy hiệu không cộng vào điểm tuần */}
+        <Link to="/games" className="block group">
+          <div className="h-full bg-card border border-border rounded-2xl p-6 hover:border-primary hover:shadow-[var(--shadow-glow)] transition-all">
+            <div className="flex items-center justify-between mb-3">
+              <div className="size-10 rounded-xl bg-primary-soft text-primary flex items-center justify-center">
+                <Gamepad2 className="size-5" />
+              </div>
+              <ChevronRight className="size-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+            </div>
+            <h3 className="font-bold text-lg">Trò chơi đồ thị</h3>
+            <p className="text-sm text-muted-foreground mt-1">6 trò chơi: tự chạy BFS, DFS, Dijkstra, Kruskal và vẽ một nét. Điểm tính riêng, không vào bảng xếp hạng tuần.</p>
+            <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary-soft text-primary-strong text-sm font-semibold">
+              Vào chơi
             </div>
           </div>
         </Link>

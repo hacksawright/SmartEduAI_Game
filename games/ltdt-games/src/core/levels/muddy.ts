@@ -1,0 +1,173 @@
+// Màn chơi Thành phố bùn (Ch.7). Nhãn nhà là chữ cái, trọng số là chi phí lát đường.
+
+import type { MuddyLevel } from "./types";
+
+const base = { game: "muddy_city", chapter: "ch7", track: "muddy_city" } as const;
+const id = (n: number) => `ch7-l${String(n).padStart(2, "0")}`;
+
+export const muddyLevels: MuddyLevel[] = [
+  {
+    ...base,
+    id: id(1),
+    n: 1,
+    title: "Làng năm nhà",
+    intro: "Mưa xuống là đường lầy lội. Hãy lát đá vừa đủ để nhà nào cũng đi tới được mọi nhà khác, tốn ít tiền nhất.",
+    tip: "Chạm một con đường để lát hoặc bỏ lát.",
+    graph: {
+      vertices: [
+        ["A", 140, 140],
+        ["B", 140, 380],
+        ["C", 400, 250],
+        ["D", 660, 120],
+        ["E", 660, 380],
+      ],
+      edges: "A-B:6 A-C:3 B-C:4 C-D:5 C-E:2 D-E:7 A-D:9",
+    },
+  },
+  {
+    ...base,
+    id: id(2),
+    n: 2,
+    title: "Bên kia đồi",
+    intro: "Sáu nhà. Để ý: nối đủ mọi nhà chỉ cần số đường bằng số nhà trừ 1.",
+    graph: {
+      vertices: [
+        ["A", 100, 120],
+        ["B", 100, 380],
+        ["C", 300, 250],
+        ["D", 500, 100],
+        ["E", 500, 400],
+        ["F", 720, 250],
+      ],
+      edges: "A-B:4 A-C:5 B-C:3 A-D:8 C-D:6 C-E:4 B-E:7 D-E:9 D-F:3 E-F:7 C-F:10",
+    },
+  },
+  {
+    ...base,
+    id: id(3),
+    n: 3,
+    title: "Đường cùng giá",
+    intro: "Có nhiều con đường cùng giá, nên có thể có nhiều cách lát rẻ nhất.",
+    graph: {
+      vertices: [
+        ["A", 90, 250],
+        ["B", 230, 90],
+        ["C", 230, 410],
+        ["D", 420, 250],
+        ["E", 600, 90],
+        ["F", 600, 410],
+        ["G", 760, 250],
+      ],
+      edges: "A-B:3 A-C:3 B-C:4 B-D:5 C-D:5 B-E:6 D-E:4 D-F:4 C-F:7 E-G:2 F-G:5 E-F:3",
+    },
+  },
+  {
+    ...base,
+    id: id(4),
+    n: 4,
+    title: "Thị trấn tám nhà",
+    intro: "Tám nhà, mười lăm con đường. Lát vội đường rẻ có khi lại thừa.",
+    graph: {
+      vertices: [
+        ["A", 90, 130],
+        ["B", 90, 370],
+        ["C", 250, 250],
+        ["D", 400, 90],
+        ["E", 400, 410],
+        ["F", 560, 250],
+        ["G", 720, 110],
+        ["H", 720, 390],
+      ],
+      edges: "A-B:7 A-C:4 B-C:5 A-D:9 C-D:6 C-E:3 B-E:8 D-F:5 E-F:4 C-F:9 D-G:6 F-G:3 F-H:7 E-H:5 G-H:4",
+    },
+  },
+  {
+    ...base,
+    id: id(5),
+    n: 5,
+    title: "Hai xóm",
+    intro: "Thị trấn có hai xóm. Cần ít nhất một con đường nối hai xóm với nhau.",
+    graph: {
+      vertices: [
+        ["A", 80, 250],
+        ["B", 200, 90],
+        ["C", 200, 410],
+        ["D", 360, 250],
+        ["E", 500, 90],
+        ["F", 500, 410],
+        ["G", 640, 250],
+        ["H", 780, 100],
+        ["I", 780, 400],
+      ],
+      edges: "A-B:4 A-C:6 A-D:7 B-D:5 C-D:3 B-E:8 D-E:6 D-F:4 C-F:9 E-G:5 F-G:7 D-G:10 E-H:6 G-H:3 G-I:4 F-I:8 H-I:5",
+    },
+  },
+  {
+    ...base,
+    id: id(6),
+    n: 6,
+    title: "Thành phố mười nhà",
+    intro: "Màn lớn nhất: mười nhà. Bình tĩnh, đường rẻ trước.",
+    graph: {
+      vertices: [
+        ["A", 80, 120],
+        ["B", 80, 380],
+        ["C", 220, 250],
+        ["D", 360, 90],
+        ["E", 360, 410],
+        ["F", 500, 250],
+        ["G", 640, 90],
+        ["H", 640, 410],
+        ["I", 780, 140],
+        ["J", 780, 370],
+      ],
+      edges: "A-B:5 A-C:3 B-C:4 A-D:8 C-D:6 C-E:5 B-E:7 D-F:4 E-F:7 C-F:9 D-G:7 F-G:5 F-H:3 E-H:8 G-I:4 H-J:6 I-J:2 G-H:9 H-I:7",
+    },
+  },
+  {
+    ...base,
+    id: id(7),
+    n: 7,
+    variant: "forced",
+    title: "Đường bắt buộc",
+    intro: "Thị trưởng đã hứa lát con đường B–E (đã lát sẵn, có ổ khóa). Lát thêm sao cho tổng chi phí nhỏ nhất.",
+    tip: "Cây khung nhỏ nhất chứa một cạnh cho trước (Bài 24c, Ch.7).",
+    locked: ["B-E"],
+    graph: {
+      vertices: [
+        ["A", 100, 250],
+        ["B", 260, 90],
+        ["C", 260, 410],
+        ["D", 430, 250],
+        ["E", 600, 90],
+        ["F", 600, 410],
+        ["G", 760, 250],
+      ],
+      edges: "A-B:2 A-C:5 B-C:6 B-D:4 C-D:3 B-E:7 D-E:5 D-F:6 C-F:4 E-G:3 F-G:8 D-G:9",
+    },
+  },
+  {
+    ...base,
+    id: id(8),
+    n: 8,
+    variant: "broken",
+    title: "Đường hỏng",
+    intro: "Lũ cuốn mất đường B–E của mạng đường tối ưu. Các đường còn lại vẫn tốt (có ổ khóa). Chọn đường thay thế rẻ nhất.",
+    tip: "Bỏ một cạnh khỏi cây khung nhỏ nhất rồi nối lại bằng cạnh rẻ nhất (Bài 21, Ch.7).",
+    locked: ["A-C", "G-H", "B-C", "E-F", "C-D", "F-G"],
+    broken: ["B-E"],
+    graph: {
+      vertices: [
+        ["A", 90, 130],
+        ["B", 90, 370],
+        ["C", 260, 250],
+        ["D", 420, 90],
+        ["E", 420, 410],
+        ["F", 580, 250],
+        ["G", 740, 120],
+        ["H", 740, 380],
+      ],
+      edges: "A-B:6 A-C:2 B-C:3 A-D:7 C-D:4 C-E:7 B-E:5 D-F:6 E-F:3 C-F:8 D-G:8 F-G:4 F-H:6 E-H:7 G-H:2",
+    },
+  },
+];

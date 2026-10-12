@@ -1,0 +1,97 @@
+/*
+ * Token giao diện (docs/ART_DIRECTION.md mục 3–9).
+ * Website SmartEduAI có design system riêng thì chỉ cần ghi đè các biến màu ở đây.
+ * Mọi biến đặt trong .lg-root để không đụng CSS của trang chủ khi nhúng.
+ */
+.lg-root {
+  color-scheme: light;
+
+  /* giao diện */
+  --c-primary: #0d9488;
+  --c-primary-strong: #0f766e;
+  --c-primary-soft: #ccfbf1;
+  --c-secondary: #2dd4bf;
+  --c-accent: #ea580c;
+  --c-accent-strong: #c2410c;
+  --c-accent-soft: #ffedd5;
+  --c-on-accent-small: #1c1917;
+  --c-bg: #f0fdfa;
+  --c-card: #ffffff;
+  --c-text: #134e4a;
+  --c-text-muted: #3d6a66;
+  --c-border: #5eead4;
+  --c-border-soft: #d5f5ef;
+  --c-border-strong: #3d6a66;
+  --c-error: #dc2626;
+  --c-error-soft: #fee2e2;
+  --c-success: #0f766e;
+  --c-success-soft: #ccfbf1;
+  --c-star: #f59e0b;
+  --c-star-empty: #cbd5e1;
+
+  /* trạng thái đỉnh */
+  --v-idle-fill: #e2e8f0;
+  --v-idle-stroke: #64748b;
+  --v-queued-fill: #fde68a;
+  --v-queued-stroke: #d97706;
+  --v-current-stroke: #ea580c;
+  --v-done-fill: #0d9488;
+  --v-done-stroke: #0f766e;
+  --v-done-text: #001f1c;
+  --v-text: #0f172a;
+  --e-idle: #7c8da3;
+  --e-result: #0f766e;
+  --e-dim: #cbd5e1;
+
+  /* Okabe–Ito (game tô màu) */
+  --oi-1: #e69f00;
+  --oi-2: #56b4e9;
+  --oi-3: #009e73;
+  --oi-4: #f0e442;
+  --oi-5: #0072b2;
+  --oi-6: #d55e00;
+  --oi-7: #cc79a7;
+
+  /* chữ */
+  --f-display: "Baloo 2", "Be Vietnam Pro", system-ui, sans-serif;
+  --f-body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  /* hình khối */
+  --r-card: 20px;
+  --r-btn: 14px;
+  --r-input: 10px;
+  --r-chip: 999px;
+  --r-clay: 28px;
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --tap: 44px;
+
+  /* chuyển động */
+  --t-fast: 120ms;
+  --t-base: 220ms;
+  --t-slow: 420ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Claymorphism (chỉ cho khoảnh khắc thưởng) */
+  --clay-shadow:
+    0 18px 36px -12px rgb(13 148 136 / 0.35),
+    inset 0 -6px 0 rgb(13 148 136 / 0.12),
+    inset 0 2px 0 rgb(255 255 255 / 0.9);
+
+  --topbar-h: 56px;
+  --controls-h: 72px;
+  --panel-w: 380px;
+}
+
+@media (max-width: 1023px) {
+  .lg-root {
+    --panel-w: 320px;
+  }
+}
