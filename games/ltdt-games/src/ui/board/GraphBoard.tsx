@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useRef, type CSSProperties, type KeyboardEvent, type MouseEvent, type PointerEvent, type ReactNode } from "react";
 import type { Edge, Graph, VertexId } from "../../core/graph";
-import { clientToSvg, edgeCurves, edgeGeom, fitLayout, vertexAt, type Layout } from "./geometry";
+import { clientToSvg, edgeCurves, edgeGeom, fitLayout, vertexAt, type Frame, type Layout, type Pt } from "./geometry";
 import { useSize } from "./useSize";
 
 export type VState = "idle" | "queued" | "current" | "done" | "dim";
@@ -44,6 +44,18 @@ export interface EdgeView {
   /** tăng để chạy một xung sáng dọc cạnh từ flowFrom */
   flow?: number;
   flowFrom?: VertexId;
+  /** vẽ cạnh như một ống nước; giá trị là phần đã đầy (0–1), bề rộng dòng nước tỉ lệ theo */
+  pipe?: number;
+}
+
+/** Di chuyển đỉnh (Gỡ rối). Tọa độ trả về là tọa độ logic của màn (đã bỏ phép xoay dọc nếu có). */
+export interface MoverProps {
+  /** đang kéo: vị trí xem trước; null khi thao tác bị hủy */
+  onDrag(id: VertexId, p: Pt | null): void;
+  /** thả đỉnh sau khi kéo */
+  onDrop(id: VertexId, p: Pt): void;
+  /** chạm vào chỗ trống trên bảng (đặt đỉnh đang chọn) */
+  onTapBoard?(p: Pt): void;
 }
 
 export interface BoardCtx {
@@ -71,7 +83,18 @@ export interface GraphBoardProps {
   under?: (ctx: BoardCtx) => ReactNode;
   over?: (ctx: BoardCtx) => ReactNode;
   className?: string;
+  /** khung cố định cho bố cục (xem FitOptions.frame) */
+  frame?: Frame;
+  /** kéo đỉnh tới chỗ mới, chạm chỗ trống để đặt đỉnh; chạm đỉnh vẫn gọi onVertex */
+  mover?: MoverProps;
+  /** phím khác trên một đỉnh (ví dụ phím mũi tên để dời đỉnh); gọi preventDefault để chặn Enter/Space mặc định */
+  onVertexKey?: (id: VertexId, e: KeyboardEvent) => void;
+  /** chiều dài mũi tên của cung (px màn hình) */
+  arrowPx?: number;
 }
+
+/** Khoảng di chuyển (px màn hình) để một lần nhấn trở thành thao tác kéo. */
+const DRAG_SLOP = 6;
 
 const CHECK_PATH = "M-4.2 0.2 L-1.2 3.2 L4.4 -3";
 
@@ -87,13 +110,14 @@ export function GraphBoard(p: GraphBoardProps) {
         radiusPx: p.radiusPx ?? (p.mini ? 7 : 25),
         marginPx: p.mini ? 6 : 26,
         maxScale: p.mini ? 1 : 1.5,
+        frame: p.frame,
       }),
-    [p.graph, p.allowTranspose, p.mini, p.radiusPx, size.w, size.h],
+    [p.graph, p.allowTranspose, p.mini, p.radiusPx, p.frame, size.w, size.h],
   );
   const px = 1 / layout.scale;
   const curves = useMemo(() => edgeCurves(p.graph), [p.graph]);
   const r = layout.r;
-  const arrow = p.graph.directed ? (p.mini ? 7 : 13) * px : 0;
+  const arrow = p.graph.directed ? (p.mini ? 7 : (p.arrowPx ?? 13)) * px : 0;
 
   // rung cả bàn cờ (Web Animations API; tắt khi giảm chuyển động)
   const lastShake = useRef(p.shake ?? 0);
@@ -149,13 +173,62 @@ export function GraphBoard(p: GraphBoardProps) {
     dragging.current = null;
   };
 
+  // ----- di chuyển đỉnh -----
+  const moving = useRef<{ id: VertexId | null; pid: number; x0: number; y0: number; moved: boolean } | null>(null);
+  const toGraph = (q: Pt): Pt => (layout.transposed ? { x: q.y, y: q.x } : q);
+  const onMoveDown = (e: PointerEvent<SVGSVGElement>) => {
+    if (!p.mover || !svgRef.current) return;
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+    const pt = clientToSvg(svgRef.current, e.clientX, e.clientY);
+    if (!pt) return;
+    const id = vertexAt(layout, pt);
+    if (id) {
+      e.preventDefault();
+      try {
+        svgRef.current.setPointerCapture(e.pointerId);
+      } catch {
+        /* không bắt được con trỏ: vẫn chạm-rồi-đặt được */
+      }
+    }
+    moving.current = { id, pid: e.pointerId, x0: e.clientX, y0: e.clientY, moved: false };
+  };
+  const onMoveMove = (e: PointerEvent<SVGSVGElement>) => {
+    const m = moving.current;
+    if (!m || m.pid !== e.pointerId || !m.id || !svgRef.current || !p.mover) return;
+    if (!m.moved && Math.hypot(e.clientX - m.x0, e.clientY - m.y0) < DRAG_SLOP) return;
+    m.moved = true;
+    const pt = clientToSvg(svgRef.current, e.clientX, e.clientY);
+    if (pt) p.mover.onDrag(m.id, toGraph(pt));
+  };
+  const onMoveUp = (e: PointerEvent<SVGSVGElement>) => {
+    const m = moving.current;
+    moving.current = null;
+    if (!m || m.pid !== e.pointerId || !svgRef.current || !p.mover) return;
+    const pt = clientToSvg(svgRef.current, e.clientX, e.clientY);
+    if (m.id && m.moved) {
+      if (pt) p.mover.onDrop(m.id, toGraph(pt));
+      else p.mover.onDrag(m.id, null);
+    } else if (m.id) {
+      p.onVertex?.(m.id);
+    } else if (pt && Math.hypot(e.clientX - m.x0, e.clientY - m.y0) < DRAG_SLOP * 2) {
+      p.mover.onTapBoard?.(toGraph(pt));
+    }
+  };
+  const onMoveCancel = () => {
+    const m = moving.current;
+    moving.current = null;
+    if (m?.id && m.moved) p.mover?.onDrag(m.id, null);
+  };
+
   const activate = (id: VertexId) => p.onVertex?.(id);
   const onVertexClick = (id: VertexId) => (e: MouseEvent) => {
-    // chế độ kéo: chuột/chạm đã xử lý ở pointerdown; chỉ nhận click từ bàn phím/trình đọc màn hình
-    if (p.drag && e.detail > 0) return;
+    // chế độ kéo: chuột/chạm đã xử lý ở pointerdown/pointerup; chỉ nhận click từ bàn phím/trình đọc màn hình
+    if ((p.drag || p.mover) && e.detail > 0) return;
     activate(id);
   };
   const onVertexKey = (id: VertexId) => (e: KeyboardEvent) => {
+    p.onVertexKey?.(id, e);
+    if (e.defaultPrevented) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       activate(id);
@@ -172,17 +245,18 @@ export function GraphBoard(p: GraphBoardProps) {
       {ready && (
         <svg
           ref={svgRef}
-          className={`lg-board__svg${p.drag ? " lg-board__svg--drag" : ""}`}
+          className={`lg-board__svg${p.drag || p.mover ? " lg-board__svg--drag" : ""}`}
           viewBox={`${fmt(vb.x)} ${fmt(vb.y)} ${fmt(vb.w)} ${fmt(vb.h)}`}
           preserveAspectRatio="xMidYMid meet"
           role={p.mini ? "img" : "group"}
           aria-label={p.label}
+          data-transposed={layout.transposed || undefined}
           style={{ "--px": px } as CSSProperties}
-          onPointerDown={p.drag ? onPointerDown : undefined}
-          onPointerMove={p.drag ? onPointerMove : undefined}
-          onPointerUp={p.drag ? endDrag : undefined}
-          onPointerCancel={p.drag ? endDrag : undefined}
-          onLostPointerCapture={p.drag ? endDrag : undefined}
+          onPointerDown={p.mover ? onMoveDown : p.drag ? onPointerDown : undefined}
+          onPointerMove={p.mover ? onMoveMove : p.drag ? onPointerMove : undefined}
+          onPointerUp={p.mover ? onMoveUp : p.drag ? endDrag : undefined}
+          onPointerCancel={p.mover ? onMoveCancel : p.drag ? endDrag : undefined}
+          onLostPointerCapture={p.drag && !p.mover ? endDrag : undefined}
         >
           {p.under?.(ctx)}
 
@@ -194,9 +268,27 @@ export function GraphBoard(p: GraphBoardProps) {
               const geo = edgeGeom(a, b, r, curves.get(e.id) ?? 0, arrow);
               const state = view.state ?? "idle";
               const drawing = !!view.draw;
+              const pipe = view.pipe;
               return (
-                <g key={e.id} className={`lg-e lg-e--${state}${drawing ? " lg-e--drawing" : ""}`}>
-                  <path className="lg-e__line" d={geo.d} />
+                <g
+                  key={e.id}
+                  className={`lg-e lg-e--${state}${drawing ? " lg-e--drawing" : ""}${pipe !== undefined ? " lg-e--pipe" : ""}`}
+                >
+                  {pipe === undefined ? (
+                    <path className="lg-e__line" d={geo.d} />
+                  ) : (
+                    <>
+                      <path className="lg-e__pipe" d={geo.d} />
+                      <path className="lg-e__bore" d={geo.d} />
+                      {pipe > 0 && (
+                        <path
+                          className="lg-e__water"
+                          d={geo.d}
+                          style={{ strokeWidth: fmt((3 + 7 * Math.min(1, pipe)) * px) }}
+                        />
+                      )}
+                    </>
+                  )}
                   {geo.arrow && <path className="lg-e__arrow" d={geo.arrow} />}
                   {drawing && (
                     <path

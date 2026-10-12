@@ -29,6 +29,15 @@ export interface FitOptions {
   marginPx?: number;
   /** tỉ lệ tối đa (tránh phóng quá to trên màn rộng) */
   maxScale?: number;
+  /** khung cố định (tọa độ logic): bố cục theo khung này thay vì theo vị trí đỉnh, để đỉnh di chuyển mà bảng không co giãn */
+  frame?: Frame | null;
+}
+
+export interface Frame {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
 }
 
 function bounds(pts: Pt[]) {
@@ -73,8 +82,15 @@ export function fitLayout(g: Graph, w: number, h: number, opts: FitOptions = {})
     radiusPx: opts.radiusPx ?? 25,
     marginPx: opts.marginPx ?? 26,
     maxScale: opts.maxScale ?? 1.5,
+    frame: opts.frame ?? null,
   };
-  const normal = g.vertices.map((v) => ({ x: v.x, y: v.y }));
+  const f = o.frame;
+  const normal = f
+    ? [
+        { x: f.minX, y: f.minY },
+        { x: f.maxX, y: f.maxY },
+      ]
+    : g.vertices.map((v) => ({ x: v.x, y: v.y }));
   const width = Math.max(1, w);
   const height = Math.max(1, h);
   const a = fitOne(normal, width, height, o);

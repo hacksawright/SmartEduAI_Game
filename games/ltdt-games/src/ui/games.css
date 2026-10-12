@@ -651,3 +651,209 @@
     min-height: 36px;
   }
 }
+
+/* ---------- Ô nhập số có nút − / + (Gỡ rối: số miền; Ống nước: lượng bơm) ---------- */
+
+.lg-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+
+.lg-stepper__label {
+  font-weight: 600;
+}
+
+.lg-stepper__row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px;
+  border-radius: 14px;
+  background: #f1f5f9;
+}
+
+.lg-stepper__btn {
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px var(--c-border-soft);
+}
+
+.lg-stepper__input {
+  width: 3.5em;
+  min-height: var(--tap);
+  border: 2px solid var(--c-border-strong);
+  border-radius: var(--r-input);
+  background: #fff;
+  color: var(--c-text);
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.lg-stepper__input::-webkit-outer-spin-button,
+.lg-stepper__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.lg-stepper__input:focus-visible {
+  outline: 3px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+.lg-stepper__unit {
+  padding-right: 8px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+/* ---------- Gỡ rối ---------- */
+
+/* dấu × tại chỗ hai cạnh cắt nhau: hình dạng (không chỉ màu) báo lỗi; không chặn thao tác chạm */
+.lg-xmarks {
+  pointer-events: none;
+}
+
+.lg-xmark circle {
+  fill: #fff;
+  stroke: var(--c-error);
+  stroke-width: 2px;
+}
+
+.lg-xmark path {
+  fill: none;
+  stroke: var(--c-error);
+  stroke-width: 2.5px;
+  stroke-linecap: round;
+}
+
+.lg-xmark {
+  animation: lg-xmark-in var(--t-base) var(--ease-pop);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes lg-xmark-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.lg-proof__nm {
+  font-weight: 700;
+}
+
+.lg-proof {
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.lg-proof .lg-seg__opt {
+  justify-content: center;
+  padding: 6px 10px;
+  text-align: center;
+  line-height: 1.3;
+}
+
+@media (max-width: 479px) {
+  .lg-proof .lg-seg__opt {
+    min-height: 40px;
+    font-size: 14px;
+  }
+
+  /* nút điều khiển chật trên màn hẹp: chỉ giữ biểu tượng (nút vẫn có aria-label) */
+  .lg-btn__wide {
+    display: none;
+  }
+}
+
+/* ---------- Chia đội ---------- */
+
+.lg-teams__brush .lg-seg__opt {
+  gap: 8px;
+}
+
+.lg-teams__swatch {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-family: var(--f-display);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.lg-teams__count {
+  min-width: 1.6em;
+  padding: 1px 6px;
+  border-radius: var(--r-chip);
+  background: #e2e8f0;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--c-text);
+}
+
+.lg-teams__len {
+  font-family: var(--f-mono);
+}
+
+/* ---------- Ống nước & nút thắt ---------- */
+
+.lg-fpath {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 10px;
+}
+
+.lg-fpath__route {
+  font-size: 17px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.lg-fpath__label {
+  margin-right: 6px;
+  font-family: var(--f-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.lg-fpath__arrow {
+  color: var(--c-text-muted);
+}
+
+.lg-fpath__arrow--back {
+  color: var(--c-accent-strong);
+}
+
+.lg-fpath__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.lg-fpath__steps li {
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: #f1f5f9;
+}
+
+.lg-fpath__steps .lg-fpath__step--back {
+  background: var(--c-accent-soft);
+  color: #9a3412;
+}

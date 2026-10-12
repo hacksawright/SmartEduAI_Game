@@ -8,9 +8,11 @@ export function useSize<T extends HTMLElement>() {
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
+    // So đúng từng giá trị: bỏ qua thay đổi nhỏ (trước đây < 0.5 px) thì lần đo đầu lúc bố cục chưa chốt
+    // (ví dụ màn chơi vừa tải xong chunk) bị giữ mãi. Nội dung không làm khung đổi cỡ (SVG đặt tuyệt đối) nên không lặp.
     const read = () => {
       const r = el.getBoundingClientRect();
-      setSize((s) => (Math.abs(s.w - r.width) < 0.5 && Math.abs(s.h - r.height) < 0.5 ? s : { w: r.width, h: r.height }));
+      setSize((s) => (s.w === r.width && s.h === r.height ? s : { w: r.width, h: r.height }));
     };
     read();
     if (typeof ResizeObserver === "undefined") {

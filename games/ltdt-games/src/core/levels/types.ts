@@ -1,6 +1,15 @@
 import type { GraphSpec, VertexId } from "../graph";
 
-export type GameId = "traversal" | "dijkstra" | "one_stroke" | "muddy_city" | "greedy_order" | "matrix_translate";
+export type GameId =
+  | "traversal"
+  | "dijkstra"
+  | "one_stroke"
+  | "muddy_city"
+  | "greedy_order"
+  | "matrix_translate"
+  | "untangle"
+  | "two_teams"
+  | "max_flow";
 export type ChapterId = "ch1" | "ch2" | "ch3" | "ch4" | "ch5" | "ch6" | "ch7" | "ch8";
 
 interface BaseLevel {
@@ -64,4 +73,39 @@ export interface MatrixLevel extends BaseLevel {
   par: number;
 }
 
-export type Level = TraversalLevel | DijkstraLevel | OneStrokeLevel | MuddyLevel | GreedyLevel | MatrixLevel;
+export interface UntangleLevel extends BaseLevel {
+  game: "untangle";
+  /** loại đáp án (kiểm thử đối chiếu với bằng chứng và cách vẽ mẫu) */
+  expect: "planar" | "nonplanar";
+  /** đồ thị phẳng: một cách vẽ không giao cắt (kiểm thử, lời giải e2e) */
+  solution?: Record<VertexId, [number, number]>;
+  /** đồ thị phẳng: các đỉnh trên mặt ngoài của cách vẽ mẫu, theo thứ tự vòng (gợi ý mức 2) */
+  outer?: VertexId[];
+}
+
+export interface TwoTeamsLevel extends BaseLevel {
+  game: "two_teams";
+  /** kiểm thử đối chiếu với bipartition */
+  expect: "bipartite" | "odd-cycle";
+}
+
+export interface MaxFlowLevel extends BaseLevel {
+  game: "max_flow";
+  source: VertexId;
+  sink: VertexId;
+  /** lưu lượng có sẵn khi vào màn (theo id cung); thiếu nghĩa là 0 */
+  initialFlow?: Record<string, number>;
+  /** giá trị luồng cực đại (kiểm thử đối chiếu với Edmonds–Karp) */
+  maxFlow: number;
+}
+
+export type Level =
+  | TraversalLevel
+  | DijkstraLevel
+  | OneStrokeLevel
+  | MuddyLevel
+  | GreedyLevel
+  | MatrixLevel
+  | UntangleLevel
+  | TwoTeamsLevel
+  | MaxFlowLevel;

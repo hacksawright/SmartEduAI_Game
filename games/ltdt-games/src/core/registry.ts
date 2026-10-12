@@ -3,9 +3,12 @@
 import { dijkstraLevels } from "./levels/dijkstra";
 import { greedyLevels } from "./levels/greedy";
 import { matrixLevels } from "./levels/matrix";
+import { maxFlowLevels } from "./levels/maxFlow";
 import { muddyLevels } from "./levels/muddy";
 import { oneStrokeLevels } from "./levels/oneStroke";
 import { traversalLevels } from "./levels/traversal";
+import { twoTeamsLevels } from "./levels/twoTeams";
+import { untangleLevels } from "./levels/untangle";
 import type { ChapterId, GameId, Level } from "./levels/types";
 
 export interface Track {
@@ -19,7 +22,8 @@ export interface GameMeta {
   title: string;
   subtitle: string;
   blurb: string;
-  priority: "P0" | "P0+";
+  /** GĐ2: game giai đoạn 2 của kế hoạch (ô nhỏ trên sảnh, như P0+) */
+  priority: "P0" | "P0+" | "GĐ2";
   tracks: Track[];
   levels: Level[];
   /** chế độ Đua với máy: số giây máy cần cho mỗi câu hỏi */
@@ -71,6 +75,26 @@ export const GAMES: GameMeta[] = [
     levels: oneStrokeLevels,
   },
   {
+    id: "untangle",
+    chapter: "ch4",
+    title: "Gỡ rối",
+    subtitle: "Đồ thị phẳng",
+    blurb: "Di chuyển đỉnh cho hết giao cắt. Gặp đồ thị không phẳng thì chứng minh nó không phẳng.",
+    priority: "GĐ2",
+    tracks: [{ id: "untangle", title: "Gỡ rối" }],
+    levels: untangleLevels,
+  },
+  {
+    id: "two_teams",
+    chapter: "ch4",
+    title: "Chia đội",
+    subtitle: "Đồ thị hai phía",
+    blurb: "Chia hai đội sao cho người hay cãi nhau không chung đội; không chia được thì chỉ ra chu trình lẻ.",
+    priority: "GĐ2",
+    tracks: [{ id: "two_teams", title: "Chia đội" }],
+    levels: twoTeamsLevels,
+  },
+  {
     id: "greedy_order",
     chapter: "ch5",
     title: "Xếp thứ tự cho Greedy",
@@ -101,17 +125,27 @@ export const GAMES: GameMeta[] = [
     tracks: [{ id: "muddy_city", title: "Thành phố bùn" }],
     levels: muddyLevels,
   },
+  {
+    id: "max_flow",
+    chapter: "ch8",
+    title: "Ống nước & nút thắt",
+    subtitle: "Luồng cực đại · lát cắt nhỏ nhất",
+    blurb: "Bơm nước theo từng đường từ s tới t cho tới khi đầy, rồi tìm nút thắt quyết định lưu lượng.",
+    priority: "GĐ2",
+    tracks: [{ id: "max_flow", title: "Ống nước & nút thắt" }],
+    levels: maxFlowLevels,
+  },
 ];
 
 export const CHAPTERS: ChapterMeta[] = [
   { id: "ch1", n: 1, title: "Đại cương về đồ thị", games: ["matrix_translate"], later: ["Bảy cây cầu Königsberg"] },
   { id: "ch2", n: 2, title: "Duyệt đồ thị và tính liên thông", games: ["traversal"], later: ["Kẻ phá mạng"] },
   { id: "ch3", n: 3, title: "Đồ thị Euler và Hamilton", games: ["one_stroke"], later: ["Icosian"] },
-  { id: "ch4", n: 4, title: "Đồ thị phẳng và đồ thị hai phía", games: [], later: ["Gỡ rối (Planarity)", "Chia đội"] },
+  { id: "ch4", n: 4, title: "Đồ thị phẳng và đồ thị hai phía", games: ["untangle", "two_teams"], later: [] },
   { id: "ch5", n: 5, title: "Tô màu đồ thị", games: ["greedy_order"], later: ["Người vẽ bản đồ", "Đấu tô màu vs AI"] },
   { id: "ch6", n: 6, title: "Đường đi ngắn nhất", games: ["dijkstra"], later: ["Săn chênh lệch tỷ giá"] },
   { id: "ch7", n: 7, title: "Cây và cây khung nhỏ nhất", games: ["muddy_city"], later: ["Cắt – Nối"] },
-  { id: "ch8", n: 8, title: "Luồng cực đại", games: [], later: ["Ống nước & nút thắt"] },
+  { id: "ch8", n: 8, title: "Luồng cực đại", games: ["max_flow"], later: [] },
 ];
 
 const levelIndex = new Map<string, Level>();

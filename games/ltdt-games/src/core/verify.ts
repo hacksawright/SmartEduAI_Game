@@ -9,7 +9,10 @@ import type { PredictionEngine } from "./engines/types";
 import { isPermutation, runGreedy } from "./games/greedyOrder";
 import { compareKeys } from "./games/matrixTranslate";
 import { analyzeMuddy, optimalCost, validatePaved } from "./games/muddyCity";
+import { replayFlow, type FlowAction } from "./games/maxFlow";
 import { replayOneStroke, type OneStrokeAction } from "./games/oneStroke";
+import { replayTeams, type TeamsAction } from "./games/twoTeams";
+import { replayUntangle, type UntangleAction } from "./games/untangle";
 import { makeGraph, type VertexId } from "./graph";
 import { getLevel, RACE_SUFFIX } from "./registry";
 import {
@@ -18,6 +21,7 @@ import {
   matrixOutcome,
   muddyOutcome,
   oneStrokeOutcome,
+  puzzleOutcome,
   type Outcome,
 } from "./scoring";
 
@@ -35,7 +39,10 @@ export type Submission =
   | { kind: "one_stroke"; actions: OneStrokeAction[]; hints: number }
   | { kind: "muddy_city"; paved: string[]; hints: number }
   | { kind: "greedy_order"; runs: VertexId[][]; hints: number }
-  | { kind: "matrix_translate"; checks: { answer: string[]; elapsedMs: number }[]; hints: number };
+  | { kind: "matrix_translate"; checks: { answer: string[]; elapsedMs: number }[]; hints: number }
+  | { kind: "untangle"; actions: UntangleAction[]; hints: number }
+  | { kind: "two_teams"; actions: TeamsAction[]; hints: number }
+  | { kind: "max_flow"; actions: FlowAction[]; hints: number };
 
 export type VerifyResult =
   | ({ ok: true } & Outcome & { detail: Record<string, number> })
@@ -142,6 +149,33 @@ export function verifySubmission(levelId: string, sub: Submission): VerifyResult
         }
       }
       return fail("Chưa có lần kiểm tra nào đúng.");
+    }
+
+    case "untangle": {
+      if (level.game !== "untangle") return fail("Sai loại game.");
+      if (!Array.isArray(sub.actions) || sub.actions.length > MAX_LOG) return fail("Nhật ký không hợp lệ.");
+      const s = replayUntangle(g, sub.actions);
+      if (s.status !== "won" && s.status !== "proved") return fail("Chưa gỡ xong và chưa chứng minh không phẳng.");
+      const o = puzzleOutcome({ mistakes: s.mistakes, hints });
+      return { ok: true, ...o, detail: { mistakes: s.mistakes, moves: s.moves, hints } };
+    }
+
+    case "two_teams": {
+      if (level.game !== "two_teams") return fail("Sai loại game.");
+      if (!Array.isArray(sub.actions) || sub.actions.length > MAX_LOG) return fail("Nhật ký không hợp lệ.");
+      const s = replayTeams(g, sub.actions);
+      if (s.status !== "won" && s.status !== "proved") return fail("Chưa chia xong và chưa chỉ ra chu trình lẻ.");
+      const o = puzzleOutcome({ mistakes: s.mistakes, hints });
+      return { ok: true, ...o, detail: { mistakes: s.mistakes, checks: s.checks, hints } };
+    }
+
+    case "max_flow": {
+      if (level.game !== "max_flow") return fail("Sai loại game.");
+      if (!Array.isArray(sub.actions) || sub.actions.length > MAX_LOG) return fail("Nhật ký không hợp lệ.");
+      const s = replayFlow(g, level, sub.actions);
+      if (s.phase !== "won") return fail("Chưa đạt luồng cực đại và lát cắt nhỏ nhất.");
+      const o = puzzleOutcome({ mistakes: s.mistakes, hints });
+      return { ok: true, ...o, detail: { mistakes: s.mistakes, pushes: s.pushes, value: level.maxFlow, hints } };
     }
   }
 }

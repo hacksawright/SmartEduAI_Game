@@ -1,4 +1,4 @@
-// Màn chơi Tôi là thuật toán (BFS/DFS, Ch.2). Đồ thị tự thiết kế (GDD mục 12, câu 7).
+// Màn chơi Tôi là thuật toán (BFS/DFS, Ch.2). Đồ thị tự thiết kế (GDD mục 15, câu 7).
 // Chỉ số đỉnh = thứ tự trong mảng `vertices` (ở đây trùng với nhãn 1..n).
 
 import type { TraversalLevel } from "./types";

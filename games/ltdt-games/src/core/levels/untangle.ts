@@ -1,0 +1,185 @@
+// Màn chơi Gỡ rối (Ch.4 – Đồ thị phẳng). Vị trí ban đầu sinh bằng cách xếp đỉnh lên elip (hoặc lưới) theo thứ tự
+// xáo trộn, chọn số giao cắt tăng dần qua các màn; `solution` là một cách vẽ phẳng để kiểm thử và gợi ý.
+// Tiến trình: ba màn phẳng → K₅ (đếm cạnh) → K₃,₃ (đếm cạnh khi không có tam giác) → bát diện (dày nhưng vẫn phẳng)
+// → K₃,₃ ẩn (đếm cạnh không đủ, phải tìm đồ thị con) → lưới có đường chéo.
+
+import type { UntangleLevel } from "./types";
+
+const base = { game: "untangle", chapter: "ch4", track: "untangle" } as const;
+const id = (n: number) => `ch4-l${String(n).padStart(2, "0")}`;
+
+export const untangleLevels: UntangleLevel[] = [
+  {
+    ...base,
+    id: id(1),
+    n: 1,
+    title: "Lăng trụ",
+    intro: "Các cạnh đang cắt nhau. Di chuyển đỉnh cho tới khi không còn chỗ cắt nào.",
+    tip: "Kéo một đỉnh tới chỗ mới, hoặc chạm đỉnh rồi chạm vào chỗ trống trên bảng.",
+    expect: "planar",
+    graph: {
+      vertices: [
+        ["1", 430, 65],
+        ["2", 716, 158],
+        ["3", 716, 343],
+        ["4", 144, 343],
+        ["5", 430, 435],
+        ["6", 144, 158],
+      ],
+      edges: "1-2 2-3 3-1 4-5 5-6 6-4 1-4 2-5 3-6",
+    },
+    solution: { 1: [430, 50], 2: [740, 445], 3: [120, 445], 4: [430, 205], 5: [555, 370], 6: [305, 370] },
+    outer: ["1", "2", "3"],
+  },
+  {
+    ...base,
+    id: id(2),
+    n: 2,
+    title: "Bánh xe",
+    intro: "Một đỉnh nối với mọi đỉnh còn lại. Gỡ hết giao cắt.",
+    expect: "planar",
+    graph: {
+      vertices: [
+        ["1", 430, 65],
+        ["2", 688, 135],
+        ["3", 573, 417],
+        ["4", 287, 417],
+        ["5", 172, 135],
+        ["6", 108, 291],
+        ["7", 752, 291],
+      ],
+      edges: "1-2 2-3 3-4 4-5 5-6 6-1 7-1 7-2 7-3 7-4 7-5 7-6",
+    },
+    solution: { 1: [430, 45], 2: [650, 150], 3: [650, 350], 4: [430, 455], 5: [210, 350], 6: [210, 150], 7: [430, 250] },
+    outer: ["1", "2", "3", "4", "5", "6"],
+  },
+  {
+    ...base,
+    id: id(3),
+    n: 3,
+    title: "Lập phương",
+    intro: "Khung một hình lập phương: 8 đỉnh, 12 cạnh. Vẽ lại nó trên mặt phẳng mà không cạnh nào cắt nhau.",
+    expect: "planar",
+    graph: {
+      vertices: [
+        ["1", 663, 119],
+        ["2", 663, 381],
+        ["3", 100, 250],
+        ["4", 197, 119],
+        ["5", 430, 65],
+        ["6", 760, 250],
+        ["7", 430, 435],
+        ["8", 197, 381],
+      ],
+      edges: "1-2 2-3 3-4 4-1 5-6 6-7 7-8 8-5 1-5 2-6 3-7 4-8",
+    },
+    solution: { 1: [140, 45], 2: [720, 45], 3: [720, 455], 4: [140, 455], 5: [320, 165], 6: [540, 165], 7: [540, 335], 8: [320, 335] },
+    outer: ["1", "2", "3", "4"],
+  },
+  {
+    ...base,
+    id: id(4),
+    n: 4,
+    title: "Năm đỉnh, mười cạnh",
+    intro: "Mỗi đỉnh nối với mọi đỉnh khác. Gỡ được thì gỡ; nếu tin là không thể, bấm Không phẳng và đưa bằng chứng.",
+    tip: "Đồ thị phẳng đơn có n ≥ 3 đỉnh thì số cạnh m ≤ 3n − 6.",
+    expect: "nonplanar",
+    graph: {
+      vertices: [
+        ["1", 744, 193],
+        ["2", 430, 65],
+        ["3", 116, 193],
+        ["4", 624, 400],
+        ["5", 236, 400],
+      ],
+      edges: "1-2 1-3 1-4 1-5 2-3 2-4 2-5 3-4 3-5 4-5",
+    },
+  },
+  {
+    ...base,
+    id: id(5),
+    n: 5,
+    title: "Ba nhà, ba giếng",
+    intro: "Ba nhà 1, 2, 3 cần đường tới cả ba giếng 4, 5, 6 mà không đường nào cắt nhau. Làm được không?",
+    tip: "Đồ thị không có tam giác thì chặn chặt hơn: m ≤ 2n − 4.",
+    expect: "nonplanar",
+    graph: {
+      vertices: [
+        ["1", 716, 343],
+        ["2", 430, 65],
+        ["3", 144, 158],
+        ["4", 430, 435],
+        ["5", 144, 343],
+        ["6", 716, 158],
+      ],
+      edges: "1-4 1-5 1-6 2-4 2-5 2-6 3-4 3-5 3-6",
+    },
+  },
+  {
+    ...base,
+    id: id(6),
+    n: 6,
+    title: "Bát diện",
+    intro: "Đồ thị này có m = 3n − 6 cạnh, nhiều nhất có thể. Phẳng hay không?",
+    expect: "planar",
+    graph: {
+      vertices: [
+        ["1", 430, 65],
+        ["2", 430, 435],
+        ["3", 144, 343],
+        ["4", 716, 343],
+        ["5", 716, 158],
+        ["6", 144, 158],
+      ],
+      edges: "1-3 3-5 5-1 2-4 4-6 6-2 2-3 2-5 4-1 4-5 6-1 6-3",
+    },
+    solution: { 1: [430, 40], 3: [790, 455], 5: [70, 455], 2: [430, 360], 4: [330, 230], 6: [530, 230] },
+    outer: ["1", "3", "5"],
+  },
+  {
+    ...base,
+    id: id(7),
+    n: 7,
+    title: "Kẻ giấu mặt",
+    intro: "Đếm cạnh không giúp được ở màn này. Gỡ được thì gỡ; không thì tìm thứ đang ẩn bên trong.",
+    tip: "Định lý Kuratowski: đồ thị chứa K₅ hoặc K₃,₃ (hay một phép chia nhỏ của chúng) thì không phẳng.",
+    expect: "nonplanar",
+    graph: {
+      vertices: [
+        ["1", 529, 220],
+        ["2", 759, 63],
+        ["3", 745, 220],
+        ["4", 311, 248],
+        ["5", 319, 83],
+        ["6", 301, 397],
+        ["7", 96, 99],
+        ["8", 105, 260],
+      ],
+      edges: "2-1 2-4 2-8 5-1 5-4 5-8 7-1 7-4 7-8 2-5 3-2 3-5 1-4 6-1 6-4 3-6",
+    },
+  },
+  {
+    ...base,
+    id: id(8),
+    n: 8,
+    title: "Lưới chéo",
+    intro: "Chín đỉnh, mười sáu cạnh. Màn cuối: gỡ hết giao cắt.",
+    expect: "planar",
+    graph: {
+      vertices: [
+        ["1", 103, 75],
+        ["2", 745, 277],
+        ["3", 366, 227],
+        ["4", 97, 224],
+        ["5", 500, 404],
+        ["6", 729, 417],
+        ["7", 140, 398],
+        ["8", 285, 424],
+        ["9", 559, 60],
+      ],
+      edges: "1-2 2-3 4-5 5-6 7-8 8-9 1-4 4-7 2-5 5-8 3-6 6-9 1-5 2-6 4-8 5-9",
+    },
+    solution: { 1: [190, 60], 2: [430, 60], 3: [670, 60], 4: [190, 250], 5: [430, 250], 6: [670, 250], 7: [190, 440], 8: [430, 440], 9: [670, 440] },
+    outer: ["1", "2", "3", "6", "9", "8", "7", "4"],
+  },
+];

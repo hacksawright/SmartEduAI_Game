@@ -145,6 +145,56 @@
   }
 }
 
+/* ---------- Ống nước (Luồng cực đại) ----------
+   Vỏ ống xám, lòng ống sáng, dòng nước xanh Okabe–Ito (#0072B2) dày theo f/c. Nhãn "f/c" luôn đi kèm
+   nên mức nước không chỉ được báo bằng màu. */
+
+.lg-e__pipe,
+.lg-e__bore,
+.lg-e__water {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.lg-e__pipe {
+  stroke: var(--e-idle);
+  stroke-width: calc(var(--px) * 15px);
+  transition:
+    stroke var(--t-base) var(--ease-out),
+    opacity var(--t-base) var(--ease-out);
+}
+
+.lg-e__bore {
+  stroke: #f8fafc;
+  stroke-width: calc(var(--px) * 11px);
+}
+
+.lg-e__water {
+  stroke: var(--oi-5);
+  transition: stroke-width var(--t-base) var(--ease-out);
+}
+
+.lg-e--pipe.lg-e--active .lg-e__pipe {
+  stroke: var(--c-accent);
+}
+
+.lg-e--pipe.lg-e--hint .lg-e__pipe {
+  stroke: var(--c-accent);
+  stroke-dasharray: calc(var(--px) * 12px) calc(var(--px) * 8px);
+}
+
+.lg-e--pipe.lg-e--error .lg-e__pipe {
+  stroke: var(--c-error);
+}
+
+.lg-e--pipe.lg-e--result .lg-e__pipe {
+  stroke: var(--e-result);
+}
+
+.lg-e--pipe.lg-e--dim {
+  opacity: 0.4;
+}
+
 /* ---------- Nhãn trọng số ---------- */
 
 .lg-elabel rect {

@@ -136,7 +136,8 @@
 
 .lg-controls {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  /* hai bên bằng nhau để nút giữa nằm chính giữa; khi chật, mỗi bên vẫn giữ đủ bề rộng nút của nó */
+  grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
   align-items: center;
   gap: var(--s-3);
   min-height: var(--controls-h);

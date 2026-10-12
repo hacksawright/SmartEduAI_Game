@@ -30,6 +30,14 @@ export function oneStrokeOutcome(m: { mistakes: number; hints: number }): Outcom
   return { stars: applyHints(base, m.hints), score: clampScore(1000 - 150 * m.mistakes - 100 * m.hints) };
 }
 
+/**
+ * Gỡ rối, Chia đội, Ống nước & nút thắt: lỗi là một kết luận sai (bằng chứng sai, kiểm tra còn xung đột,
+ * báo cực đại khi vẫn còn đường tăng luồng…). Cùng thang với Một nét vẽ: 0 lỗi → 3, 1–2 lỗi → 2, ≥ 3 → 1.
+ */
+export function puzzleOutcome(m: { mistakes: number; hints: number }): Outcome {
+  return oneStrokeOutcome(m);
+}
+
 /** Thành phố bùn: bằng tối ưu → 3, chênh ≤ 10% → 2, cây khung hợp lệ → 1 (mục 4.3 kế hoạch). */
 export function muddyOutcome(m: { cost: number; optimal: number; hints: number }): Outcome {
   const base = m.cost <= m.optimal ? 3 : m.cost <= m.optimal * 1.1 + 1e-9 ? 2 : 1;

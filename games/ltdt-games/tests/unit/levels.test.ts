@@ -24,7 +24,7 @@ describe("dữ liệu chung", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("số màn đúng GDD mục 10", () => {
+  it("số màn đúng GDD mục 13", () => {
     const count = (id: string) => GAMES.find((g) => g.id === id)!.levels.length;
     expect(count("traversal")).toBe(8);
     expect(count("dijkstra")).toBe(5);
@@ -32,6 +32,9 @@ describe("dữ liệu chung", () => {
     expect(count("muddy_city")).toBe(8);
     expect(count("greedy_order")).toBe(4);
     expect(count("matrix_translate")).toBe(5);
+    expect(count("untangle")).toBe(8);
+    expect(count("two_teams")).toBe(6);
+    expect(count("max_flow")).toBe(5);
   });
 
   it("số thứ tự trong mỗi nhóm liên tục từ 1", () => {
