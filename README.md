@@ -6,6 +6,7 @@ SmartEdu là ứng dụng học tập theo hình thức game hóa, tập trung v
 
 - **Luyện tập theo chương:** 8 chủ đề gồm nhập môn đồ thị, DFS/BFS, Euler–Hamilton, đồ thị phẳng và đồ thị hai phía, tô màu, đường đi ngắn nhất, cây khung và luồng cực đại.
 - **Điểm và xếp hạng tuần:** mỗi chương có 5 câu; mỗi câu đúng được 20 điểm. Điểm tuần cộng điểm cao nhất của từng chương trong tuần (tối đa 800 điểm). Tuần bắt đầu vào thứ Hai theo giờ Việt Nam.
+- **Trò chơi đồ thị:** 6 trò chơi (Dịch ma trận, Tôi là thuật toán (BFS/DFS), Một nét vẽ, Xếp thứ tự cho Greedy, Tôi là Dijkstra, Thành phố bùn) tại `/games`. Trò chơi là module độc lập: tự chấm và lưu tiến độ trong trình duyệt, không cộng vào điểm tuần hay bảng xếp hạng tuần. Xem [docs/game-quiz-integration.md](docs/game-quiz-integration.md).
 - **Phó bản và đấu trường:** các hoạt động học tập/thi đấu có tính điểm và tiến độ; đấu trường hỗ trợ đối thủ bot mô phỏng.
 - **Hồ sơ học tập:** theo dõi XP, cấp độ, chuỗi ngày học, thống kê và huy hiệu.
 - **Thảo luận:** trao đổi trong từng bài học.
@@ -77,7 +78,13 @@ npm run build       # Build production
 npm run preview     # Xem thử bản build production
 npm run lint        # Chạy ESLint
 npm run build:dev   # Build ở development mode
+npm test            # Unit test (Vitest)
+npm run test:e2e    # Test e2e (Playwright) với Supabase giả, không cần project Supabase thật
+npm run games:build # Build lại module Trò chơi và chép vào public/games/ltdt
+npm run games:test  # Typecheck + unit test của module Trò chơi
 ```
+
+Lần đầu chạy e2e cần cài trình duyệt: `npx playwright install chromium`. Module Trò chơi có dependencies riêng: chạy `npm install` trong `games/ltdt-games` trước khi dùng `games:build` hoặc `games:test`. Chi tiết: [docs/game-quiz-integration.md](docs/game-quiz-integration.md).
 
 ## Deploy
 
@@ -88,9 +95,16 @@ Repo có cấu hình `vercel.json` và build bằng `npm run build`. Khi deploy 
 ```text
 src/
   components/       # Giao diện dùng chung
+  features/
+    quiz/           # Luyện tập theo chương và bảng xếp hạng tuần (giao diện, điểm, gọi Supabase)
+    games/          # Tải và gắn module Trò chơi vào trang /games
   integrations/     # Tích hợp Supabase
   lib/              # Auth, điểm, huy hiệu và nội dung câu hỏi
   routes/           # Các trang và route của ứng dụng
+games/ltdt-games/   # Mã nguồn module Trò chơi (project Vite riêng)
+public/games/ltdt/  # Bản build của module Trò chơi (sinh bởi npm run games:build)
+design-system/      # Design system của Quiz (màu, chữ, thành phần, quy tắc truy cập)
+e2e/                # Test e2e Playwright và Supabase giả
 supabase/
   migrations/       # Migration schema và dữ liệu Supabase
 ```
