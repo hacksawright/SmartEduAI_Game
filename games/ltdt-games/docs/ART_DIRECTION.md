@@ -57,6 +57,19 @@ Quy tắc nút: CTA chính là nút cam, chữ Baloo 2 đậm 19–20px màu tr�
 
 Lấy toàn bộ bảng màu của gói Kenney RTS Medieval: cỏ xanh, đất vàng nâu, đá xám. Đường đất vẽ bằng SVG và tô bằng texture đất của chính gói đó; đường đã lát tô bằng texture đá. Thẻ chi phí là nhãn trắng, số JetBrains Mono, để luôn đọc chính xác trên mọi nền.
 
+### 3.5 Gỡ rối, Chia đội, Ống nước & nút thắt
+
+- **Chỗ cắt** (Gỡ rối): cạnh đang vướng tô màu lỗi, và tại giao điểm có **dấu × trong vòng tròn trắng**. Đọc được bằng hình, không cần màu.
+- **Hai nhóm / hai đội:** `#E69F00` chữ `#111827` (7.9:1) và `#0072B2` chữ trắng (5.2:1), lấy từ Okabe–Ito. Luôn kèm số nhóm (1, 2) hoặc chữ X, Y trong huy hiệu.
+- **Ống nước:**
+  - thành ống màu cạnh thường, lòng ống `#F8FAFC`;
+  - nước `#0072B2`, dày 3–10 px theo tỉ lệ f/c;
+  - nhãn f/c (JetBrains Mono) luôn hiện.
+- **Nguồn, bể và lát cắt:**
+  - nguồn s và các trạm phía S: nền `#009E73`, chữ `#111827` (5.2:1);
+  - bể t: huy hiệu trắng;
+  - ống của lát cắt tô màu gợi ý; ống đi ngược từ T sang S mờ 40% vì không tính vào dung lượng.
+
 ## 4. Chữ
 
 | Vai trò | Font | Cỡ / độ đậm |
@@ -136,6 +149,8 @@ box-shadow:
 
 - **Vẽ cạnh** (Một nét vẽ): nét mực chạy dọc cạnh bằng `stroke-dashoffset`, đầu bút màu cam.
 - **Lát đường** (Thành phố bùn): lớp đá phủ dần từ nhà này sang nhà kia. Khi cả thành phố liên thông, vài người dân (sprite Kenney) đi dọc các đường đã lát.
+- **Gỡ rối:** dấu × hiện ra bằng hiệu ứng pop khi hai cạnh bắt đầu cắt nhau; đỉnh bị từ chối vì đặt quá sát thì rung nhẹ.
+- **Bơm nước** (Ống nước & nút thắt): một xung nước chạy dọc đường vừa bơm, dòng nước trong ống dày dần lên theo f/c.
 - **Đỉnh đang xét:** vòng sáng cam tỏa ra theo chu kỳ 1.6s.
 - **Pháo giấy:** canvas phủ trên cùng, màu lấy từ token (teal, cam, vàng `#FDE68A`), tự dọn sau 1.8s.
 

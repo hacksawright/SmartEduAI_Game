@@ -2,7 +2,7 @@
   "name": "smartedu-ltdt-games",
   "private": true,
   "version": "0.1.0",
-  "description": "Game hóa môn Lý thuyết đồ thị – SmartEduAI: 6 game, 45 màn (Dịch ma trận, Tôi là thuật toán, Một nét vẽ, Xếp thứ tự cho Greedy, Tôi là Dijkstra, Thành phố bùn)",
+  "description": "Game hóa môn Lý thuyết đồ thị – SmartEduAI: 9 game, 64 màn (Dịch ma trận, Tôi là thuật toán, Một nét vẽ, Gỡ rối, Chia đội, Xếp thứ tự cho Greedy, Tôi là Dijkstra, Thành phố bùn, Ống nước & nút thắt)",
   "type": "module",
   "scripts": {
     "dev": "vite",

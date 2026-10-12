@@ -106,6 +106,22 @@ Phần khựng còn lại là bước layout khi hộp kết quả xuất hiện
 | Chế độ Đua với máy mới có e2e cho 1 màn | Thêm e2e cho cả 13 màn đua | `levels.spec.ts` |
 | `npm run e2e` chạy luôn dự án chụp ảnh và ghi đè `docs/screens/` | `npm run e2e` chỉ chạy desktop và mobile; chụp ảnh là `npm run shots` | – |
 
+## Vòng 7 · Ba game giai đoạn 2 (Gỡ rối, Chia đội, Ống nước & nút thắt)
+
+Mỗi game được chơi bằng kịch bản Playwright và chụp ảnh ở 375, 768, 1024 và 1440 px rồi xem bằng mắt. Bộ e2e tự giải cả 19 màn mới trên desktop và mobile, thêm các test kéo-thả bằng chuột thật, chơi bằng bàn phím và trả lời sai.
+
+| Game | Vấn đề | Cách sửa | Giữ bằng |
+|---|---|---|---|
+| Gỡ rối | Lớp dấu × ở chỗ hai cạnh cắt nhau chặn cú chạm vào đỉnh nằm bên dưới | Lớp dấu × không nhận chạm (`pointer-events: none`) | `levels.spec.ts` (bộ giải chạm đỉnh rồi chạm chỗ trống) |
+| Gỡ rối | Trên màn dưới 380 px, bảng bằng chứng xếp 4 lý do thành một cột, đẩy nút xác nhận ra xa | Giữ 2 cột ở mọi cỡ màn; dưới 480 px chữ nhỏ lại một chút | – (ảnh chụp) |
+| Chia đội | Ở 375 px, nút "Kiểm tra" đè lên nút "Không chia được", chữ bị cắt | Hai cột bên của thanh nút dùng `minmax(max-content, 1fr)`; dưới 480 px nút phụ chỉ còn biểu tượng (vẫn có `aria-label`) | `checklist.ts`: các nút của thanh dưới, kể cả nút đang khóa, không được đè nhau, tràn khỏi màn hình hay bị cắt chữ |
+| Ống nước | Dòng đường đang chọn chỉ hiện "s", không rõ là gì | Thêm nhãn "Đường:" | – (ảnh chụp) |
+| Kiểm thử | Test checklist bố cục đi qua cả 64 màn và 13 màn đua nên vượt giới hạn 60 giây | Đánh dấu `test.slow()` | `app.spec.ts` |
+| Kiểm thử | Cổng 5199 bị một dev server cũ chiếm, Playwright dùng nhầm bản cũ | Thêm biến `LTDT_E2E_PORT` để chọn cổng khác | – |
+| Mọi game | Sau khi tách giao diện từng game thành chunk tải sau, bàn chơi đôi khi lệch 0,5 px giữa hai lần mở cùng một màn (test nhúng ch3-l01 trên mobile hỏng 3/6 lần). `useSize` bỏ qua thay đổi dưới 0,5 px, nên lần đo đầu lúc bố cục chưa chốt bị giữ mãi | `useSize` chỉ bỏ qua khi kích thước giống hệt (SVG đặt tuyệt đối nên không gây vòng lặp đo) | `embed.spec.ts` (8/8 lần chạy lặp) |
+| Kiểm thử | Test giảm chuyển động đo cả thao tác chạm đỉnh và lần chờ nút "Tô nhanh", nên vượt 6 giây khi máy bận; lại không phân biệt được có giảm chuyển động hay không vì bộ giải bấm "Tô nhanh" | Chỉ đo từ "Chạy Greedy" tới kết quả, không bấm "Tô nhanh", giới hạn 3 giây (giảm chuyển động khoảng 0,8 giây, bình thường khoảng 4,6 giây) | `a11y.spec.ts` |
+| Kiểm thử | Test CSS bản nhúng đo màn intro khi chunk của game còn đang tải | Chờ nút "Bắt đầu" hiện rồi mới đo | `embed.spec.ts` |
+
 ## Kết quả kiểm thử cuối
 
 Chạy ngày 12/10/2026 trên Windows 11, Node 22.22, Chromium của Playwright 1.64:
@@ -113,8 +129,8 @@ Chạy ngày 12/10/2026 trên Windows 11, Node 22.22, Chromium của Playwright 
 | Lệnh | Kết quả |
 |---|---|
 | `npm run typecheck` | không lỗi |
-| `npm test` (Vitest) | 259/259 qua (6 file) |
-| `npm run e2e` (desktop + mobile) | 184 qua, 2 bỏ qua (hai test cỡ tablet chỉ chạy trong dự án desktop), 4,2 phút |
-| `npm run build` | JS 439 kB (gzip 138 kB), CSS 58 kB (gzip 11.5 kB) |
-| `npm run build:embed` | `ltdt-games.js` 439 kB (gzip 138 kB), `ltdt-games.css` 58 kB (gzip 11.5 kB) |
-| `npm run shots` | 26 ảnh trong `docs/screens/` (desktop và mobile) |
+| `npm test` (Vitest) | 351/351 qua (7 file) |
+| `npm run e2e` (desktop + mobile) | 232 qua, 2 bỏ qua (hai test cỡ tablet chỉ chạy trong dự án desktop), 5,3 phút |
+| `npm run build` | JS chính 344 kB (gzip 108 kB) + 17 chunk tải sau 176 kB (gzip 67 kB), CSS 61 kB (gzip 12 kB) |
+| `npm run build:embed` | `ltdt-games.js` 236 kB (gzip 73 kB) + 20 chunk trong `assets/` 284 kB (gzip 104 kB), `ltdt-games.css` 61 kB (gzip 12 kB) |
+| `npm run shots` | 38 ảnh trong `docs/screens/` (sảnh và 9 game, desktop và mobile) |

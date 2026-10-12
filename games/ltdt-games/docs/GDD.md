@@ -1,8 +1,9 @@
 # GDD – Game hóa môn Lý thuyết đồ thị (SmartEduAI)
 
-> Phiên bản v1.2 · 12/10/2026 · Phạm vi: các game **P0** và **P0+** trong `ke-hoach-game-hoa-LTDT.md`, mục 3–4.
-> v1.1 ghi lại bản đã làm: tên màn thật, số đỉnh/cạnh, và các quyết định phát sinh khi chơi thử (mục 13).
-> v1.2 thêm đồng bộ tiến độ giữa các máy, token xác thực, bản nhúng vào trang chủ và kết quả đo hiệu năng (mục 2.4, 12, 13).
+> Phiên bản v1.3 · 12/10/2026 · Phạm vi: các game **P0**, **P0+** và ba game **giai đoạn 2** (Ch.4, Ch.8) trong `ke-hoach-game-hoa-LTDT.md`, mục 3–4.
+> v1.1 ghi lại bản đã làm: tên màn thật, số đỉnh/cạnh, và các quyết định phát sinh khi chơi thử (mục 16).
+> v1.2 thêm đồng bộ tiến độ giữa các máy, token xác thực, bản nhúng vào trang chủ và kết quả đo hiệu năng (mục 2.4, 15, 16).
+> v1.3 thêm ba game giai đoạn 2: Gỡ rối, Chia đội (Ch.4) và Ống nước & nút thắt (Ch.8), mục 9–11. Các mục sau đó lùi số.
 > Dữ liệu màn chơi chính xác (đỉnh, cạnh, tọa độ) nằm trong `src/core/levels/`. Tài liệu này mô tả luật chơi, cách chấm và mục tiêu học của từng màn.
 
 ## 0. Tóm tắt
@@ -36,6 +37,7 @@ Một "sảnh game" nhúng vào SmartEduAI. Mỗi chương của giáo trình c�
 | Thành phố bùn | bằng tối ưu → 3 · chênh ≤ 10% → 2 · cây khung hợp lệ → 1 *(đúng mục 4.3)* | −1 sao mỗi lần dùng *(3 sao đòi hỏi không dùng gợi ý)* |
 | Xếp thứ tự cho Greedy | đạt χ(G) ở lần chạy đầu → 3 · trong ≤ 3 lần → 2 · đạt χ → 1 | −1 sao mỗi lần dùng |
 | Dịch ma trận | đúng ở lần kiểm tra đầu và trong thời gian chuẩn → 3 · đúng trong ≤ 2 lần → 2 · đúng → 1 | −1 sao mỗi lần dùng |
+| Gỡ rối, Chia đội, Ống nước & nút thắt | như Một nét vẽ: 0 lỗi → 3 · 1–2 lỗi → 2 · ≥ 3 lỗi → 1. Lỗi = một kết luận sai: số miền sai, bằng chứng không phẳng sai, "Kiểm tra" còn cặp cùng đội, vòng lẻ sai, báo cực đại khi còn đường tăng luồng, lát cắt sai. Thao tác bị từ chối (đặt đỉnh quá sát, ống đã đầy, chưa xếp hết) không tính lỗi | −1 sao mỗi lần dùng |
 
 "Mỗi lần dùng giảm tối đa 1 sao" (mục 6 kế hoạch): một lần gợi ý trừ đúng 1 sao, và sao không xuống dưới 1.
 
@@ -48,6 +50,7 @@ Chỉ phản ánh độ đúng, không phản ánh số lần bấm (nguyên t�
 - Thành phố bùn: `1000 × (chi phí tối ưu / chi phí của SV) − 100 × gợi ý`
 - Greedy: `1000 − 150 × (số lần chạy − 1) − 100 × gợi ý`
 - Dịch ma trận: `1000 − 150 × lần kiểm tra sai − 100 × gợi ý − 5 × số giây vượt thời gian chuẩn`
+- Gỡ rối, Chia đội, Ống nước & nút thắt: `1000 − 150 × lỗi − 100 × gợi ý` (cùng công thức với Một nét vẽ)
 
 ### 2.4 Điểm thưởng, sự kiện, chống cộng trùng (mục 6 kế hoạch)
 
@@ -256,11 +259,105 @@ G2 thay cho chu trình lẻ C7 của bản v1: với C7, thứ tự mặc địn
 | X4 | Ma trận liên thuộc → đồ thị (`ch1-l04`) | 5 đỉnh, 6 cạnh | 75 giây |
 | X5 | Ma trận kề có hướng (`ch1-l05`) | 5 đỉnh, 6 cung | 75 giây |
 
-## 9. Nhịp độ
+## 9. Gỡ rối (Ch.4 – Đồ thị phẳng) · Giai đoạn 2
+
+**Mục tiêu học:** nhận ra đồ thị phẳng bằng cách tự vẽ lại nó; công thức Euler n − m + f = 2; chứng minh một đồ thị không phẳng bằng hệ quả m ≤ 3n − 6, chặn m ≤ 2n − 4 khi không có tam giác, và định lý Kuratowski (K₅, K₃,₃).
+
+- Lúc vào màn, các cạnh cắt nhau. Mỗi chỗ cắt có **dấu ×**, cạnh đang vướng tô đỏ. Đỉnh nằm sát lên một cạnh khác (gần hơn 24 đơn vị) cũng tính là vướng. Ô "Giao cắt" cập nhật sau mỗi lần dời đỉnh.
+- Có ba cách dời đỉnh: kéo-thả; **chạm đỉnh rồi chạm chỗ trống** (thay cho kéo, theo mục 10 kế hoạch); hoặc phím mũi tên (giữ Shift để bước dài hơn), focus vẫn ở lại trên đỉnh. "Hoàn tác" đưa đỉnh vừa dời về chỗ cũ.
+- Hai đỉnh không được đặt cách nhau dưới 84 đơn vị (`MIN_GAP`), để không "gỡ" được bằng cách chồng đỉnh lên nhau. Thả sai chỗ thì đỉnh bị trả về, có báo lý do, không tính lỗi.
+- Khi hết giao cắt, game hỏi: "Hình vừa vẽ chia mặt phẳng thành bao nhiêu miền, kể cả miền bên ngoài?" Đáp án là f = m − n + 1 + c, với c là số thành phần liên thông. Trả lời sai tính 1 lỗi. Nếu trả lời f − 1, game nhắc "có thể bạn quên miền bên ngoài".
+- Nút "Không phẳng" mở bảng bằng chứng. Sinh viên chọn một lý do:
+  - *Đếm cạnh:* m > 3n − 6.
+  - *Không có tam giác:* m > 2n − 4. Máy kiểm tra cả việc đồ thị thật sự không có tam giác.
+  - *Chứa K₅:* chạm chọn 5 đỉnh.
+  - *Chứa K₃,₃:* chạm một lần để xếp đỉnh vào nhóm 1, lần nữa để sang nhóm 2, lần thứ ba để bỏ. Nhóm ghi bằng số trong huy hiệu, không chỉ bằng màu.
+- Lý do sai, hoặc chọn sai đồ thị con, tính 1 lỗi và có câu giải thích, ví dụ "m = 9, 3n − 6 = 12. Vì 9 ≤ 12 nên…". Đồ thị phẳng không có bằng chứng nào đúng, nên bấm "Không phẳng" ở màn phẳng luôn bị tính lỗi.
+- **Gợi ý:**
+  - Màn phẳng: (1) "Chọn một chu trình làm vòng ngoài…"; (2) tô sáng vòng ngoài của một cách vẽ mẫu. Câu hỏi số miền có gợi ý riêng: (1) nhắc miền vô hạn; (2) công thức Euler, kèm n và m.
+  - Màn không phẳng: (1) "Đếm n, m rồi so với các chặn…"; (2) chỉ hướng bằng chứng đúng đầu tiên, có tô sáng đỉnh nếu là K₅ hoặc K₃,₃.
+- **Bộ chấm:**
+  - `conflicts()` kiểm tra giao nhau giữa mọi cặp cạnh không chung đỉnh, và khoảng cách từ mỗi đỉnh tới các cạnh không chứa nó.
+  - `judgeProof()` kiểm tra bằng chứng.
+  - Server phát lại nhật ký thao tác (`replayUntangle`).
+
+| Màn | Tên (id) | Đồ thị | Đáp án |
+|---|---|---|---|
+| U1 | Lăng trụ (`ch4-l01`) | 6 đỉnh, 9 cạnh | phẳng, 5 miền |
+| U2 | Bánh xe (`ch4-l02`) | 7 đỉnh, 12 cạnh | phẳng, 7 miền |
+| U3 | Lập phương (`ch4-l03`) | 8 đỉnh, 12 cạnh | phẳng, 6 miền |
+| U4 | Năm đỉnh, mười cạnh (`ch4-l04`) | 5 đỉnh, 10 cạnh (K₅) | không phẳng: đếm cạnh hoặc K₅ |
+| U5 | Ba nhà, ba giếng (`ch4-l05`) | 6 đỉnh, 9 cạnh (K₃,₃) | không phẳng: chặn 2n − 4 hoặc K₃,₃ (đếm cạnh 3n − 6 không đủ) |
+| U6 | Bát diện (`ch4-l06`) | 6 đỉnh, 12 cạnh | phẳng, 8 miền. m = 3n − 6 đúng bằng giới hạn: bẫy "nhiều cạnh nên không phẳng" |
+| U7 | Kẻ giấu mặt (`ch4-l07`) | 8 đỉnh, 16 cạnh | không phẳng: chỉ K₃,₃ (cả hai chặn đếm cạnh đều không đủ) |
+| U8 | Lưới chéo (`ch4-l08`) | 9 đỉnh, 16 cạnh | phẳng, 9 miền |
+
+Màn phẳng và màn không phẳng xen kẽ nhau, để sinh viên không đoán theo vị trí màn (giống màn "bất khả" của *Một nét vẽ*).
+
+## 10. Chia đội (Ch.4 – Đồ thị hai phía) · Giai đoạn 2
+
+**Mục tiêu học:** đồ thị là hai phía khi và chỉ khi không có chu trình lẻ; kiểm tra bằng BFS.
+
+- Chọn "cọ" Đội X (màu cam, huy hiệu chữ X) hoặc Đội Y (màu xanh dương, huy hiệu chữ Y), rồi chạm từng bạn để xếp. Chạm lại thì bỏ. Đội luôn ghi bằng chữ, không chỉ bằng màu. Bàn phím: X, Y, Delete trên đỉnh đang focus.
+- Nút "Kiểm tra":
+  - còn bạn chưa xếp: khoanh các bạn còn thiếu, không tính lỗi;
+  - còn cạnh nối hai bạn cùng đội: tính 1 lỗi, các cạnh đó tô đỏ kèm dấu "!";
+  - không còn xung đột: thắng.
+- Nút "Không chia được": chạm lần lượt các đỉnh của một vòng. Đỉnh sau phải kề đỉnh trước; chạm đỉnh cuối để lùi một bước, chạm đỉnh đầu để khép vòng. Sau đó bấm "Xác nhận vòng lẻ". `judgeOddCycle()` kiểm tra đó là chu trình thật, không lặp đỉnh và có số cạnh lẻ. Sai thì tính 1 lỗi, kèm lý do.
+- "Xếp lại" bỏ hết đội đã xếp. Phần "Cách máy kiểm tra" có mã giả BFS 6 dòng.
+- **Gợi ý:** (1) câu hỏi dẫn dắt, ví dụ "Xếp một bạn bất kỳ vào đội X. Những bạn nối với bạn ấy buộc phải vào đội nào?"; (2) đồ thị hai phía thì tô sáng đỉnh gốc BFS và các đỉnh kề; không hai phía thì tô sáng một vòng lẻ và hỏi "Vòng này có mấy cạnh?".
+- **Thẻ "Vì sao?":**
+  - chia được: nêu định lý và số cách chia, 2^(c−1) với c thành phần liên thông;
+  - không chia được: gán thử X, Y xen kẽ dọc vòng lẻ; cạnh khép vòng có dấu "!".
+
+| Màn | Tên (id) | Đồ thị | Đáp án |
+|---|---|---|---|
+| T1 | Sáu bạn (`ch4-l09`) | 6 đỉnh, 5 cạnh (cây) | chia được |
+| T2 | Vòng tròn (`ch4-l10`) | 6 đỉnh, 8 cạnh | chia được |
+| T3 | Ngũ giác (`ch4-l11`) | 7 đỉnh, 7 cạnh | không chia được: vòng lẻ ngắn nhất có 5 cạnh |
+| T4 | Lập phương (`ch4-l12`) | 8 đỉnh, 12 cạnh | chia được |
+| T5 | Hai nhóm bạn (`ch4-l13`) | 10 đỉnh, 11 cạnh, 2 thành phần | chia được, 2 cách |
+| T6 | Hai đường chéo (`ch4-l14`) | 10 đỉnh, 15 cạnh | không chia được: vòng lẻ ngắn nhất có 5 cạnh, không có tam giác |
+
+## 11. Ống nước & nút thắt (Ch.8 – Luồng cực đại) · Giai đoạn 2
+
+**Mục tiêu học:**
+- ràng buộc dung lượng và bảo toàn luồng;
+- đường tăng luồng trên đồ thị thặng dư, kể cả đi ngược cung để bớt luồng;
+- Ford–Fulkerson và Edmonds–Karp;
+- định lý luồng cực đại – lát cắt nhỏ nhất.
+
+- Mỗi ống ghi "f/c" (lượng đang chảy / dung lượng). Dòng nước trong ống dày theo tỉ lệ f/c. Nhãn của ống đầy được tô nổi bật, và con số f/c luôn hiện nên không phụ thuộc màu.
+- **Bước 1 – Bơm nước:**
+  - Đường bắt đầu sẵn ở s. Chạm lần lượt các trạm cho tới t.
+  - Đi xuôi mũi tên khi ống còn chỗ. Đi ngược mũi tên khi ống đó đang có nước: đây là cung ngược của đồ thị thặng dư, nghĩa là bớt nước ở ống đó. Đi ngược thì có ghi chú.
+  - Ống đã đầy, hoặc không có ống nối: báo lý do, không tính lỗi.
+  - Chạm trạm cuối để lùi một bước; chạm một trạm giữa đường để cắt đường về trạm đó.
+  - Chỉnh "Lượng bơm" (mặc định bằng lượng trống nhỏ nhất trên đường) rồi bấm "Bơm". Vì chỉ bơm theo đường, luồng luôn thỏa cả ràng buộc dung lượng lẫn bảo toàn.
+  - "Đặt lại" đưa về luồng lúc vào màn.
+- "Đã cực đại": nếu vẫn còn đường tăng luồng thì tính 1 lỗi và không chỉ ra đường nào (gợi ý mức 2 mới chỉ). Báo đúng thì sang bước 2.
+- **Bước 2 – Tìm nút thắt:**
+  - Chạm các trạm để đưa vào phía S. s luôn ở phía S, t luôn ở phía T.
+  - Ống từ S sang T được tô sáng và cộng dung lượng; ống từ T sang S mờ đi vì không tính.
+  - "Xác nhận nút thắt": dung lượng lát cắt bằng giá trị luồng thì thắng, khác thì tính 1 lỗi. Mọi lát cắt có dung lượng bằng giá trị luồng đều được chấp nhận, không chỉ lát cắt máy tìm ra.
+- **Gợi ý:**
+  - Bước 1: (1) "Tìm một đường từ s tới t mà ống nào cũng còn chỗ…"; (2) tô sáng một đường tăng luồng ngắn nhất, như Edmonds–Karp chọn.
+  - Bước 2: (1) "Từ s, nước còn tới được những trạm nào?"; (2) tô sáng tập đỉnh tới được từ s trên đồ thị thặng dư.
+- **Thẻ "Vì sao?":** giá trị luồng bằng tổng dung lượng các ống của lát cắt; Edmonds–Karp cần bao nhiêu đường tăng luồng; ở màn có luồng sẵn, giải thích thêm vai trò của cung ngược.
+
+| Màn | Tên (id) | Đồ thị | Luồng cực đại | Ghi chú |
+|---|---|---|---|---|
+| F1 | Hai đường ống (`ch8-l01`) | 4 đỉnh, 4 cung | 4 | màn làm quen |
+| F2 | Ống nối (`ch8-l02`) | 4 đỉnh, 5 cung | 6 | thêm ống a → b |
+| F3 | Trả nước (`ch8-l03`) | 4 đỉnh, 5 cung | 5 | có sẵn 3 đơn vị trên s → a → b → t; phải đi ngược ống a → b |
+| F4 | Sáu trạm bơm (`ch8-l04`) | 6 đỉnh, 9 cung | 23 | Edmonds–Karp cần 3 đường |
+| F5 | Đường vòng (`ch8-l05`) | 6 đỉnh, 8 cung | 9 | có sẵn 7 đơn vị |
+
+## 12. Nhịp độ
 
 Mỗi game theo nhịp răng cưa **dạy → luyện → thử thách**: màn đầu là màn làm quen, màn giữa thêm đúng một yếu tố mới, màn cuối kết hợp các yếu tố. Màn "bất khả" của *Một nét vẽ* xen giữa các màn vẽ được, để sinh viên không đoán mò theo vị trí màn.
 
-## 10. Nội dung cần có
+## 13. Nội dung cần có
 
 | Hạng mục | Số lượng | Quy mô |
 |---|---|---|
@@ -269,21 +366,24 @@ Mỗi game theo nhịp răng cưa **dạy → luyện → thử thách**: màn �
 | Màn Một nét vẽ | 15 | vừa |
 | Màn Thành phố bùn | 6 + 2 (P0+) | vừa |
 | Màn Greedy, Dịch ma trận | 4 + 5 | nhỏ |
-| **Tổng** | **45 màn thường + 13 màn đua** | đã làm đủ |
+| Màn Gỡ rối, Chia đội (giai đoạn 2) | 8 + 6 | vừa |
+| Màn Ống nước & nút thắt (giai đoạn 2) | 5 | vừa |
+| **Tổng** | **64 màn thường + 13 màn đua** | đã làm đủ |
 | Sprite thế giới, âm thanh | xem `ASSET_MANIFEST.md` | nhỏ (CC0) |
 
-## 11. Game tương tự
+## 14. Game tương tự
 
 - *Dijkstra's Algorithm game* (Goldsmiths): người chơi tự chạy Dijkstra, chính là ý tưởng của khung dự đoán.
 - *Muddy City* và *Poor Cartographer* (CS Unplugged): hoạt động gốc của Thành phố bùn và game tô màu.
 - Các game "one-stroke" trên di động: cơ chế vẽ một nét; ở đây thêm màn "bất khả" để buộc phải dùng định lý.
 - *Mini Metro*: phong cách hình ảnh, và là màn boss của giai đoạn 2.
+- *Planarity* (John Tantalo) và *Untangle* (Simon Tatham's Portable Puzzle Collection): cơ chế kéo đỉnh cho hết giao cắt của Gỡ rối. Ở đây thêm câu hỏi số miền và màn không phẳng phải chứng minh.
 
-## 12. Câu hỏi còn mở
+## 15. Câu hỏi còn mở
 
 Năm câu ở mục 11 kế hoạch vẫn còn nguyên. Mã nguồn đã chừa sẵn chỗ cho từng phương án:
 
-1. Chương 8 có trong môn không? Trang chương hiện ghi "Giai đoạn 2".
+1. Chương 8 có trong môn không? Đã có game Ống nước & nút thắt (mục 11). Nếu môn không dạy Chương 8, chỉ cần bỏ `ch8` khỏi `CHAPTERS` trong `src/core/registry.ts`.
 2. Điểm game có tính vào học phần không? Không ảnh hưởng đến code.
 3. Gợi ý dùng chatbot Socratic hay tĩnh? Cả hai đều có sẵn (`HintProvider`).
 4. Chấm ở client hay server? Chấm ở cả hai bằng cùng một hàm `verifySubmission()`. Khuyến nghị dùng server làm nguồn tin cậy.
@@ -297,8 +397,10 @@ Câu hỏi mới phát sinh khi làm:
 9. Số điểm mỗi sao (mock: 10) do TV1 hoặc giảng viên quyết.
 10. API của TV1 có endpoint đọc tiến độ (`GET /progress?user_id=`, `INTEGRATION.md` mục 4.2) không? Nếu không có, game vẫn chạy và điểm vẫn cộng đúng, nhưng sinh viên đổi máy sẽ thấy các màn đã qua bị khóa lại.
 11. Sự kiện `game_level_abandoned` gửi bằng `sendBeacon` lúc đóng trang, nên không gắn được header `Authorization`. Server analytics cần nhận cookie phiên cùng origin, hoặc chấp nhận bỏ qua sự kiện này khi không xác thực được.
+12. Gỡ rối chỉ nhận K₅ và K₃,₃ là **đồ thị con thật**, không nhận phép chia nhỏ (subdivision) dù định lý Kuratowski có nói tới. Mọi màn không phẳng hiện tại đều chứa K₅ hoặc K₃,₃ thật. Có cần thêm màn buộc phải tìm phép chia nhỏ không? Khi đó bảng bằng chứng phải cho chọn cả đường đi thay cho cạnh.
+13. Thẻ "Vì sao?" của ba game giai đoạn 2 chỉ ghi tên chương và chủ đề (Chương 4 – Đồ thị phẳng, Đồ thị hai phía; Chương 8 – Luồng cực đại), chưa có số định lý hay số mục: cần giảng viên bổ sung (giống câu 6).
 
-## 13. Nhật ký quyết định khi làm
+## 16. Nhật ký quyết định khi làm
 
 | # | Quyết định | Lý do |
 |---|---|---|
@@ -320,3 +422,10 @@ Câu hỏi mới phát sinh khi làm:
 | 16 | Thẻ "Vì sao?" vẽ hình minh họa trễ 2 khung hình | Ở CPU chậm 4×, hộp kết quả và hình minh họa dựng cùng một khung gây khựng 333–383 ms; tách ra còn 150–200 ms. Khung hình có chiều cao cố định nên bố cục không bị xô lệch. |
 | 17 | Thành phố bùn: sau khi bấm "Kiểm tra", thẻ phản hồi thay cho dòng trạng thái | Trên mobile, hai khối cùng hiện làm bản đồ co từ 405 xuống 300 px đúng lúc người dân đi dạo; giờ chỉ co 34 px. |
 | 18 | `npm run e2e` chỉ chạy hai dự án desktop và mobile; chụp ảnh tách riêng thành `npm run shots` | Chạy kiểm thử không ghi đè ảnh trong `docs/screens/`. |
+| 19 | Gỡ rối: kéo-thả, hoặc chạm đỉnh rồi chạm chỗ trống, hoặc phím mũi tên; hai đỉnh cách nhau ít nhất 84 đơn vị | Chơi được trên điện thoại mà không cần kéo chính xác, và chơi được chỉ bằng bàn phím. Khoảng cách tối thiểu chặn cách "gỡ" bằng chồng đỉnh lên nhau. Trên màn dọc, bảng xoay 90° như các game khác và phím mũi tên đổi theo để khớp hướng trên màn hình. |
+| 20 | Gỡ rối: hết giao cắt chưa thắng ngay, phải trả lời số miền | Gỡ được bằng thử-sai; câu hỏi số miền nối hình vừa vẽ với công thức Euler (nguyên tắc "thưởng hiểu biết, không thưởng bấm"). |
+| 21 | Gỡ rối: bằng chứng Kuratowski chỉ nhận đồ thị con K₅ / K₃,₃ thật | Chạm chọn 5 hoặc 6 đỉnh là đủ, chấm rõ ràng. Màn 7 không chứng minh được bằng đếm cạnh, nên buộc phải tìm K₃,₃ (câu hỏi 12). |
+| 22 | Chia đội: "Kiểm tra" khi chưa xếp hết không tính lỗi | Chưa xếp hết chưa phải là một kết luận sai; game chỉ khoanh các bạn còn thiếu. |
+| 23 | Ống nước: luồng chỉ thay đổi bằng cách bơm theo một đường từ s tới t, không cho gõ số cho từng ống | Luồng luôn hợp lệ (dung lượng, bảo toàn), nên phản hồi tập trung vào điều cần học: ống nào đầy, khi nào được đi ngược, khi nào hết đường tăng luồng. Màn 3 và 5 có luồng sẵn để buộc phải dùng cung ngược. |
+| 24 | Thanh nút dưới màn chơi: hai cột bên là `minmax(max-content, 1fr)`; dưới 480 px, nút phụ chỉ còn biểu tượng (vẫn có `aria-label`) | Ảnh chụp 375 px cho thấy nút "Kiểm tra" của Chia đội đè lên "Không chia được". Màn rộng vẫn giữ nút giữa nằm chính giữa. |
+| 25 | Giao diện của từng game là một chunk riêng (`React.lazy` trong `PlayScreen`), chỉ tải khi mở màn | Thêm ba game làm bản nhúng tăng từ 439 lên 511 kB, vượt ngưỡng cảnh báo 500 kB của Vite. Sau khi tách, sảnh chỉ tải 236 kB (gzip 73 kB); khung màn chơi dùng chung và game được mở tải sau. |

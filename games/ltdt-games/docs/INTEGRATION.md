@@ -22,11 +22,11 @@ npm run build:embed
 
 | File trong `dist-embed/` | Nội dung |
 |---|---|
-| `ltdt-games.js` | ES module, đã gồm React 19 (khoảng 438 kB, gzip 138 kB) |
-| `ltdt-games.css` | toàn bộ CSS (khoảng 58 kB, gzip 11 kB) |
-| `assets/` | font woff2 (subset latin và vietnamese; trình duyệt chỉ tải file cần dùng), âm thanh, hình Thành phố bùn, license |
+| `ltdt-games.js` | ES module, đã gồm React 19, sảnh và các trang chung (khoảng 236 kB, gzip 73 kB) |
+| `ltdt-games.css` | toàn bộ CSS (khoảng 61 kB, gzip 12 kB) |
+| `assets/` | các chunk JS: khung màn chơi dùng chung và giao diện của từng game, chỉ tải khi mở màn (tổng khoảng 284 kB, gzip 104 kB); font woff2 (subset latin và vietnamese; trình duyệt chỉ tải file cần dùng); âm thanh; hình Thành phố bùn; license |
 
-Chép nguyên thư mục lên phần static của website, ví dụ `/static/ltdt-games/`. Giữ `assets/` nằm cạnh `ltdt-games.js`: game tìm asset theo đường dẫn của chính file JS (`import.meta.url`), nên không cần cấu hình thêm.
+Chép nguyên thư mục lên phần static của website, ví dụ `/static/ltdt-games/`. Giữ `assets/` nằm cạnh `ltdt-games.js`: game tìm asset và các chunk JS theo đường dẫn của chính file JS (`import.meta.url`), nên không cần cấu hình thêm.
 
 ### 2.2 Gắn vào trang
 
@@ -97,7 +97,7 @@ Sảnh, trang chương, huy hiệu và cài đặt cao theo nội dung.
 | `#/badges` | huy hiệu |
 | `#/settings` | cài đặt |
 
-`gameId` là một trong `matrix_translate`, `traversal`, `one_stroke`, `greedy_order`, `dijkstra`, `muddy_city`. Danh sách `levelId` nằm trong `GDD.md` (mục 3–8) và `src/core/levels/`. Route không hợp lệ đưa về sảnh; màn chưa mở hiện "Màn này chưa mở".
+`gameId` là một trong `matrix_translate`, `traversal`, `one_stroke`, `untangle`, `two_teams`, `greedy_order`, `dijkstra`, `muddy_city`, `max_flow`. Danh sách `levelId` nằm trong `GDD.md` (mục 3–11) và `src/core/levels/`. Route không hợp lệ đưa về sảnh; màn chưa mở hiện "Màn này chưa mở".
 
 ### 2.6 Cách ly CSS
 
@@ -223,6 +223,9 @@ Body: `{ "event": "<tên>", "user_id": "…", "course_id": "…", …trường r
 | `muddy_city` | `paved`: id các con đường đã lát |
 | `greedy_order` | `runs`: thứ tự đỉnh của từng lần chạy Greedy |
 | `matrix_translate` | `checks`: bài làm và thời gian của từng lần bấm Kiểm tra |
+| `untangle` | `actions`: các lần dời đỉnh (tọa độ mới), câu trả lời số miền và bằng chứng không phẳng |
+| `two_teams` | `actions`: các lần xếp hoặc bỏ đội, "Xếp lại", "Kiểm tra" và vòng lẻ đã chỉ ra |
+| `max_flow` | `actions`: các lần bơm (đường đi và lượng), "Đặt lại", "Đã cực đại" và phía S của lát cắt |
 
 Mọi loại đều có `hints` (số lần dùng gợi ý). Nhật ký dài quá 5000 bước bị từ chối. Server không kiểm được `hints` và `race.elapsedMs` vì hai số này do client báo (`GDD.md`, câu hỏi 8).
 
@@ -287,10 +290,13 @@ Kế hoạch (mục 1) cho phép dùng lại BFS, DFS, Euler, Greedy Coloring (T
 | `src/core/algorithms/euler.ts` | `analyzeEuler(g)` | bộ chấm và giao diện Một nét vẽ |
 | `src/core/algorithms/coloring.ts` | `greedyColoring(g, order)`, `chromaticNumber(g)`, `optimalGreedyOrder(g)` | bộ chấm, gợi ý và thẻ "Vì sao?" của Greedy |
 | `src/core/algorithms/spanningTree.ts` | `kruskal(g, opts)`, `prim(g, start, opts)` | chi phí tối ưu, phát lại Kruskal & Prim, thẻ "Vì sao?" của Thành phố bùn |
+| `src/core/algorithms/planarity.ts` | `conflicts(g, pos)`, `judgeProof(g, proof)`, `validProofs(g)` | bộ chấm và gợi ý của Gỡ rối |
+| `src/core/algorithms/bipartite.ts` | `bipartition(g)`, `judgeOddCycle(g, cycle)` | bộ chấm, gợi ý và thẻ "Vì sao?" của Chia đội |
+| `src/core/algorithms/maxFlow.ts` | `edmondsKarp(g, s, t, start)`, `residualArc`, `cutCapacity` | bộ chấm, gợi ý và thẻ "Vì sao?" của Ống nước & nút thắt |
 
 Khung "Tôi là thuật toán" dùng interface `PredictionEngine<S, A>` (`src/core/engines/types.ts`) với các hàm `init`, `isDone`, `expected`, `check`, `apply`, `progress`, `hint`, `referenceQuestionCount`. Ba engine BFS, DFS, Dijkstra nằm trong `src/core/engines/`. Thêm một thuật toán của giai đoạn 2 (ví dụ Bellman–Ford) nghĩa là viết thêm một engine theo interface này rồi dùng lại giao diện có sẵn.
 
-Thay xong thì chạy `npm test` (so với đáp án của từng màn) và `npm run e2e` (tự giải lại cả 45 màn và 13 màn đua trên desktop và mobile).
+Thay xong thì chạy `npm test` (so với đáp án của từng màn) và `npm run e2e` (tự giải lại cả 64 màn và 13 màn đua trên desktop và mobile).
 
 ## 9. Kiểm thử phần tích hợp
 

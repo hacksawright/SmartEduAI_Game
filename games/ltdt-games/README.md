@@ -1,6 +1,6 @@
 # Game hóa Lý thuyết đồ thị · SmartEduAI
 
-Bộ game web cho môn Lý thuyết đồ thị: **6 game, 45 màn và 13 màn "Đua với máy"**, bám theo các game P0 và P0+ trong `ke-hoach-game-hoa-LTDT.md`. Trong mỗi game, sinh viên tự làm thay thuật toán hoặc giải một câu đố đồ thị. Bộ chấm chính là thuật toán của chương đó. Xong mỗi màn, sinh viên nhận sao và xem thẻ "Vì sao?" nối kết quả với định lý trong giáo trình.
+Bộ game web cho môn Lý thuyết đồ thị: **9 game, 64 màn và 13 màn "Đua với máy"**, bám theo các game P0, P0+ và ba game giai đoạn 2 trong `ke-hoach-game-hoa-LTDT.md`. Trong mỗi game, sinh viên tự làm thay thuật toán hoặc giải một câu đố đồ thị. Bộ chấm chính là thuật toán của chương đó. Xong mỗi màn, sinh viên nhận sao và xem thẻ "Vì sao?" nối kết quả với định lý trong giáo trình.
 
 ![Sảnh game](docs/screens/desktop/00-home.jpg)
 
@@ -9,11 +9,14 @@ Bộ game web cho môn Lý thuyết đồ thị: **6 game, 45 màn và 13 màn "
 | 1 | Dịch ma trận | 5 | P0+ | chuyển qua lại giữa hình vẽ, ma trận kề, danh sách kề và ma trận liên thuộc |
 | 2 | Tôi là thuật toán (BFS/DFS) | 8 + 8 đua | P0 | dự đoán từng bước của hàng đợi và ngăn xếp |
 | 3 | Một nét vẽ | 15 | P0 | vẽ một nét, hoặc chứng minh "bất khả" bằng định lý Euler |
+| 4 | Gỡ rối | 8 | GĐ2 | dời đỉnh cho hết giao cắt rồi đếm số miền (Euler), hoặc chứng minh không phẳng bằng đếm cạnh, K₅, K₃,₃ |
+| 4 | Chia đội | 6 | GĐ2 | chia đồ thị thành hai phía, hoặc chỉ ra một chu trình lẻ |
 | 5 | Xếp thứ tự cho Greedy | 4 | P0+ | xếp thứ tự đỉnh để Greedy tô màu đạt χ(G) |
 | 6 | Tôi là Dijkstra | 5 + 5 đua | P0 | chọn đỉnh cố định nhãn và tự giảm nhãn |
 | 7 | Thành phố bùn | 6 + 2 | P0 (+2 màn P0+) | lát đường thành cây khung nhỏ nhất, rồi xem lại Kruskal và Prim |
+| 8 | Ống nước & nút thắt | 5 | GĐ2 | bơm nước theo đường tăng luồng tới cực đại, rồi chỉ ra lát cắt nhỏ nhất |
 
-Chương 4 và 8 hiện trên sảnh với nhãn "Giai đoạn 2". Luật chơi, cách chấm và mục tiêu học của từng màn nằm trong [docs/GDD.md](docs/GDD.md).
+GĐ2 là giai đoạn 2 của kế hoạch. Luật chơi, cách chấm và mục tiêu học của từng màn nằm trong [docs/GDD.md](docs/GDD.md).
 
 ## Chạy thử
 
@@ -58,7 +61,7 @@ npm run build:embed   # để test bản nhúng chạy trên bản build mới n
 npm run e2e
 ```
 
-Playwright tự bật dev server ở cổng 5199, hoặc dùng lại server đang chạy ở cổng đó.
+Playwright tự bật dev server ở cổng 5199, hoặc dùng lại server đang chạy ở cổng đó. Cổng 5199 đang bị chương trình khác chiếm thì chọn cổng khác bằng biến `LTDT_E2E_PORT`, ví dụ `LTDT_E2E_PORT=5217 npm run e2e`.
 
 ## Nhúng vào SmartEduAI
 
@@ -89,7 +92,7 @@ ltdt-games/
 │  │  ├─ algorithms/        BFS, DFS, Dijkstra, Euler, tô màu, Kruskal và Prim
 │  │  ├─ engines/           PredictionEngine cho BFS, DFS, Dijkstra
 │  │  ├─ games/             luật của từng game
-│  │  ├─ levels/            dữ liệu 45 màn
+│  │  ├─ levels/            dữ liệu 64 màn
 │  │  ├─ scoring.ts         sao và điểm
 │  │  ├─ verify.ts          chấm lại bài làm (client và server gọi cùng hàm)
 │  │  └─ events.ts          learning event, idempotency, điểm thưởng
@@ -100,11 +103,11 @@ ltdt-games/
 ├─ server/mock-api.ts       mock API điểm của TV1 (chỉ chạy trong npm run dev)
 ├─ public/assets/           âm thanh và hình Kenney (CC0), kèm license
 ├─ tests/unit/              Vitest: thuật toán, engine, luật game, dữ liệu màn, chấm lại, dịch vụ
-├─ tests/e2e/               Playwright: chơi hết 45 màn, các luồng, trợ năng, bố cục, nhúng, chụp ảnh
+├─ tests/e2e/               Playwright: chơi hết 64 màn, các luồng, trợ năng, bố cục, nhúng, chụp ảnh
 └─ docs/                    GDD, art direction, asset manifest, tích hợp, nhật ký chơi thử, ảnh chụp
 ```
 
-Bàn chơi vẽ bằng React + SVG, không dùng Phaser hay canvas: đồ thị chỉ tối đa 12 đỉnh, và mỗi đỉnh, mỗi cạnh là một phần tử thật nên dùng được bằng bàn phím và trình đọc màn hình. Lý do đầy đủ ở GDD, mục 13.
+Bàn chơi vẽ bằng React + SVG, không dùng Phaser hay canvas: đồ thị chỉ tối đa 12 đỉnh, và mỗi đỉnh, mỗi cạnh là một phần tử thật nên dùng được bằng bàn phím và trình đọc màn hình. Lý do đầy đủ ở GDD, mục 16.
 
 ## Tài liệu
 
@@ -119,9 +122,9 @@ Bàn chơi vẽ bằng React + SVG, không dùng Phaser hay canvas: đồ thị 
 
 ## Kiểm thử
 
-- **Đơn vị (Vitest):** thuật toán, ba engine, luật từng game, dữ liệu 45 màn (đáp án ghi trong dữ liệu phải khớp thuật toán), chấm lại bài làm, chống cộng trùng, gộp tiến độ từ server, token trên mọi request.
+- **Đơn vị (Vitest):** thuật toán, ba engine, luật từng game, dữ liệu 64 màn (đáp án ghi trong dữ liệu phải khớp thuật toán), chấm lại bài làm, chống cộng trùng, gộp tiến độ từ server, token trên mọi request.
 - **End-to-end (Playwright), desktop 1440 px và mobile 375 px:**
-  - tự giải lại cả 45 màn và 13 màn đua bằng thao tác thật, kiểm tra số sao;
+  - tự giải lại cả 64 màn và 13 màn đua bằng thao tác thật, kiểm tra số sao;
   - các luồng: trả lời sai, gợi ý, chơi lại không cộng trùng, mở khóa, đổi máy, xóa tiến độ;
   - trợ năng: chơi bằng bàn phím, viền focus, giảm chuyển động, tên cho mọi nút;
   - bố cục và checklist UI mục 7.5 của kế hoạch ở 375, 768, 1024 và 1440 px: vùng chạm 44 px, khoảng cách 8 px, tương phản 4.5:1, không tràn ngang;
@@ -138,7 +141,7 @@ Kết quả lần chạy gần nhất ghi trong [docs/PLAYTEST_LOG.md](docs/PLAY
 - **Server không kiểm được** số lần dùng gợi ý và thời gian của chế độ đua: hai số này do client báo (GDD, câu hỏi 8).
 - **Sự kiện rời trang** (`game_level_abandoned`) gửi bằng `sendBeacon`, không mang được header `Authorization` (GDD, câu hỏi 11).
 - **Âm thanh:** file OGG Vorbis. Safari đời cũ không giải mã được thì game tự chuyển sang âm tổng hợp bằng Web Audio.
-- **Chương 4 và 8** chưa có game (giai đoạn 2 của kế hoạch).
+- **Ba game giai đoạn 2:** thẻ "Vì sao?" chỉ ghi tên chương và chủ đề, chưa có số định lý (GDD, câu hỏi 13). Gỡ rối chỉ nhận K₅ và K₃,₃ là đồ thị con thật, chưa nhận phép chia nhỏ (GDD, câu hỏi 12).
 - **Chỉ kiểm thử trên Chromium:** desktop và giả lập Pixel 7 ở 375 px. Chưa thử trên Safari, Firefox hay điện thoại thật.
 - **Tương phản chữ bên trong SVG** (nhãn đỉnh, trọng số, thẻ giá) chưa được đo tự động; checklist chỉ đo chữ HTML.
 - **CSS của trang chủ** có selector mạnh hơn một class hoặc `!important` vẫn có thể lọt vào game; khi đó dùng iframe ([INTEGRATION](docs/INTEGRATION.md), mục 2.6).
