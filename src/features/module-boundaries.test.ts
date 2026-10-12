@@ -83,7 +83,13 @@ describe("ranh giới module Quiz ↔ Trò chơi", () => {
   });
 
   it("bản build của Trò chơi không gọi Supabase và chỉ lưu vào khóa smartedu-ltdt:*", () => {
-    const bundle = readFileSync(join(root, "public/games/ltdt/ltdt-games.js"), "utf8");
+    // file chính và các chunk giao diện từng game trong assets/ (tải khi mở màn)
+    const files = [
+      "public/games/ltdt/ltdt-games.js",
+      ...filesUnder("public/games/ltdt/assets", /\.js$/),
+    ];
+    expect(files.length).toBeGreaterThan(9);
+    const bundle = files.map((file) => readFileSync(join(root, file), "utf8")).join("\n");
     expect(bundle).not.toMatch(/supabase|\/rest\/v1|chapter_quiz_attempts|student_xp_log/i);
     const keys = new Set(bundle.match(/smartedu-ltdt:[a-z-]+/g));
     expect([...keys].sort()).toEqual([

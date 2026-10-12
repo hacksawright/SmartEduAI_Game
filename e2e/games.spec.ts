@@ -102,4 +102,11 @@ test("không tải được bản build Trò chơi: báo lỗi, thử lại đư
 test("liên kết sâu tới một game", async ({ page }) => {
   await signIn(page, "/games?game=muddy_city");
   await expect(page.getByRole("heading", { name: "Thành phố bùn" })).toBeVisible();
+  await page.goto("/games?game=max_flow");
+  await expect(page.getByRole("heading", { name: "Ống nước & nút thắt" })).toBeVisible();
+  // id màn Chương 2 đặt theo thuật toán (ch2-bfs-01), các chương khác là chN-lXX
+  for (const level of ["ch2-bfs-01", "ch4-l01"]) {
+    await page.goto(`/games?level=${level}`);
+    await expect(page.getByRole("button", { name: "Bắt đầu", exact: true })).toBeVisible();
+  }
 });

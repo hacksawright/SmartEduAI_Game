@@ -4,7 +4,7 @@ SmartEdu có hai phần học tập dùng chung khung app (menu, đăng nhập, 
 
 | | Quiz | Trò chơi |
 |---|---|---|
-| Trang | `/practice`, `/leaderboard` | `/games` (`?game=<id>`, `?level=<id>`) |
+| Trang | `/practice`, `/leaderboard` | `/games` (`?game=<id>`, `?level=<id>`, ví dụ `?game=max_flow`, `?level=ch4-l07`) |
 | Mã | `src/features/quiz/`, `src/routes/_app.practice.tsx`, `_app.leaderboard.tsx` | `games/ltdt-games/` (project riêng), `src/features/games/`, `src/routes/_app.games.tsx` |
 | Dữ liệu | Supabase: `chapter_quiz_attempts`, `student_xp_log`, `profiles`, `social_feed_events`, `weekly_prizes` | `localStorage` của trình duyệt: `smartedu-ltdt:ledger`, `outbox`, `progress`, `settings` (theo id người dùng) |
 | Điểm | Điểm tuần, XP, chuỗi ngày, bảng xếp hạng tuần | Sao, điểm và huy hiệu riêng của game |
@@ -12,7 +12,7 @@ SmartEdu có hai phần học tập dùng chung khung app (menu, đăng nhập, 
 
 ## Cách nhúng Trò chơi
 
-1. `games/ltdt-games` là project Vite riêng (6 trò chơi lý thuyết đồ thị). `npm run games:build` build
+1. `games/ltdt-games` là project Vite riêng (9 trò chơi lý thuyết đồ thị). `npm run games:build` build
    bản nhúng của nó và chép vào `public/games/ltdt/` (`ltdt-games.js`, `ltdt-games.css`, `assets/`),
    đồng thời ghi mã phiên bản vào `src/features/games/ltdt-build.ts` để trình duyệt không dùng bản cũ.
 2. Khi người học mở `/games`, `LtdtGamesHost` tải `ltdt-games.js` bằng `import()` lúc chạy, gắn

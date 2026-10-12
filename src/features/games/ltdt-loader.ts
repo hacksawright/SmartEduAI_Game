@@ -2,6 +2,7 @@
 //
 // Module Trò chơi độc lập với Luyện tập (Quiz):
 // - mã nằm trong bundle riêng /games/ltdt/ltdt-games.js (có React riêng), chỉ tải khi mở /games;
+//   giao diện của từng game là chunk trong /games/ltdt/assets/, chỉ tải khi mở màn của game đó;
 // - CSS riêng, chỉ gắn vào trang khi đang ở /games và gỡ ra khi rời trang;
 // - tự chấm và lưu tiến độ trong trình duyệt (khóa localStorage "smartedu-ltdt:*"),
 //   không đọc hay ghi bảng nào của Supabase, nên không đụng điểm tuần và bảng xếp hạng tuần.
@@ -35,9 +36,12 @@ const GAME_IDS = [
   "matrix_translate",
   "traversal",
   "one_stroke",
+  "untangle",
+  "two_teams",
   "greedy_order",
   "dijkstra",
   "muddy_city",
+  "max_flow",
 ] as const;
 
 export type LtdtGameId = (typeof GAME_IDS)[number];
@@ -46,7 +50,8 @@ export function isLtdtGameId(value: unknown): value is LtdtGameId {
   return typeof value === "string" && (GAME_IDS as readonly string[]).includes(value);
 }
 
-const LEVEL_ID = /^ch\d-l\d{2}(-race)?$/;
+// ch6-l03, ch6-l03-race; riêng Chương 2 đặt tên theo thuật toán: ch2-bfs-01, ch2-dfs-04-race
+const LEVEL_ID = /^ch\d-(?:l|bfs-|dfs-)\d{2}(?:-race)?$/;
 
 /**
  * Màn hình mở đầu của game theo tham số trên URL của SmartEdu (/games?game=…&level=…).

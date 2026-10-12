@@ -21,14 +21,17 @@ describe("nạp module Trò chơi", () => {
     expect(hash.digest("hex").slice(0, 12)).toBe(LTDT_BUILD_ID);
   });
 
-  it("chỉ nhận 6 mã game của module", () => {
+  it("chỉ nhận 9 mã game của module", () => {
     for (const id of [
       "matrix_translate",
       "traversal",
       "one_stroke",
+      "untangle",
+      "two_teams",
       "greedy_order",
       "dijkstra",
       "muddy_city",
+      "max_flow",
     ]) {
       expect(isLtdtGameId(id)).toBe(true);
     }
@@ -43,6 +46,10 @@ describe("nạp module Trò chơi", () => {
     expect(ltdtInitialRoute({ level: "ch6-l03-race", game: "dijkstra" })).toBe(
       "#/play/ch6-l03-race",
     );
+    expect(ltdtInitialRoute({ level: "ch2-bfs-01" })).toBe("#/play/ch2-bfs-01");
+    expect(ltdtInitialRoute({ level: "ch2-dfs-04-race" })).toBe("#/play/ch2-dfs-04-race");
+    expect(ltdtInitialRoute({ level: "ch8-l05" })).toBe("#/play/ch8-l05");
+    expect(ltdtInitialRoute({ game: "max_flow" })).toBe("#/game/max_flow");
     // giá trị lạ bị bỏ qua
     expect(ltdtInitialRoute({ game: "../../x" })).toBe("#/");
     expect(ltdtInitialRoute({ level: "#/settings" })).toBe("#/");
