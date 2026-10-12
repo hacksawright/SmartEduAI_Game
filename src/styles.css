@@ -46,6 +46,18 @@
   --color-card-elevated: var(--card-elevated);
   --color-streak: var(--streak);
   --color-xp: var(--xp);
+  --color-primary-strong: var(--primary-strong);
+  --color-success-strong: var(--success-strong);
+  --color-success-soft: var(--success-soft);
+  --color-danger-strong: var(--danger-strong);
+  --color-danger-soft: var(--danger-soft);
+  --color-gold: var(--gold);
+  --color-gold-strong: var(--gold-strong);
+  --color-gold-soft: var(--gold-soft);
+  --color-silver: var(--silver);
+  --color-silver-strong: var(--silver-strong);
+  --color-bronze: var(--bronze);
+  --color-bronze-strong: var(--bronze-strong);
 
   --shadow-soft: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
   --shadow-card: 0 4px 12px -2px rgb(15 23 42 / 0.06), 0 2px 4px -2px rgb(15 23 42 / 0.04);
@@ -100,6 +112,22 @@
 
   --streak: oklch(0.7 0.2 40);
   --xp: oklch(0.78 0.16 75);
+
+  /* Token cho chữ và trạng thái của Luyện tập/Xếp hạng (design-system/smartedu-quiz/MASTER.md).
+     --success, --danger, --xp ở trên chỉ dùng làm nền/viền/icon: làm màu chữ trên nền trắng
+     chúng không đạt 4.5:1. Chữ dùng các biến *-strong (đã đo trên trắng và trên nền *-soft). */
+  --primary-strong: oklch(0.457 0.215 277); /* 7.9:1 trên trắng */
+  --success-strong: oklch(0.508 0.105 165.6); /* 5.5:1 trên trắng, 5.2:1 trên --success-soft */
+  --success-soft: oklch(0.979 0.021 166.1);
+  --danger-strong: oklch(0.505 0.19 27.5); /* 6.5:1 trên trắng, 5.9:1 trên --danger-soft */
+  --danger-soft: oklch(0.971 0.013 17.4);
+  --gold: oklch(0.769 0.165 70.1);
+  --gold-strong: oklch(0.555 0.146 49); /* 5.0:1 trên trắng */
+  --gold-soft: oklch(0.987 0.021 95.3);
+  --silver: oklch(0.711 0.035 256.8);
+  --silver-strong: oklch(0.446 0.037 257.3); /* 7.6:1 trên trắng */
+  --bronze: oklch(0.553 0.174 38.4);
+  --bronze-strong: oklch(0.47 0.143 37.3); /* 7.3:1 trên trắng */
 }
 
 .dark {
