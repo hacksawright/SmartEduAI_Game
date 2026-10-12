@@ -2,23 +2,31 @@
 // Lời giải lấy từ chính engine/thuật toán tham chiếu trong src/core, nên test tự theo kịp khi đổi dữ liệu màn.
 
 import { expect, type Page, type TestInfo } from "@playwright/test";
+import { bipartition } from "../../src/core/algorithms/bipartite";
 import { analyzeEuler, findEulerTrail } from "../../src/core/algorithms/euler";
+import { edmondsKarp } from "../../src/core/algorithms/maxFlow";
+import { validProofs, type Positions } from "../../src/core/algorithms/planarity";
 import { optimalGreedyOrder } from "../../src/core/algorithms/coloring";
 import { kruskal } from "../../src/core/algorithms/spanningTree";
 import { createBfsEngine } from "../../src/core/engines/bfsEngine";
 import { createDfsEngine } from "../../src/core/engines/dfsEngine";
 import { createDijkstraEngine } from "../../src/core/engines/dijkstraEngine";
 import { targetKeys } from "../../src/core/games/matrixTranslate";
+import { faceCount } from "../../src/core/games/untangle";
 import { makeGraph, type VertexId } from "../../src/core/graph";
 import type {
   DijkstraLevel,
   GreedyLevel,
   Level,
   MatrixLevel,
+  MaxFlowLevel,
   MuddyLevel,
   OneStrokeLevel,
   TraversalLevel,
+  TwoTeamsLevel,
+  UntangleLevel,
 } from "../../src/core/levels/types";
+import { PROOF_OPTIONS } from "../../src/games/untangle/logic";
 
 /** Ghi lại lỗi/cảnh báo console, lỗi trang và response HTTP ≥ 400. */
 export function watchProblems(page: Page): string[] {
@@ -71,6 +79,12 @@ export async function solveLevel(page: Page, level: Level) {
       return solveGreedy(page, level);
     case "matrix_translate":
       return solveMatrix(page, level);
+    case "untangle":
+      return solveUntangle(page, level);
+    case "two_teams":
+      return solveTeams(page, level);
+    case "max_flow":
+      return solveFlow(page, level);
   }
 }
 
@@ -158,4 +172,91 @@ async function solveMatrix(page: Page, level: MatrixLevel) {
     }
   }
   await press(page, "Kiểm tra");
+}
+
+/** Điểm (x, y) theo tọa độ của màn, đổi sang tọa độ màn hình qua ma trận SVG (tính cả xoay dọc). */
+export async function boardPoint(page: Page, x: number, y: number): Promise<{ x: number; y: number }> {
+  return page.locator(".lg-play__stage .lg-board__svg").evaluate(
+    (svg, [gx, gy]) => {
+      const el = svg as SVGSVGElement;
+      const swap = el.hasAttribute("data-transposed");
+      const p = new DOMPoint(swap ? gy : gx, swap ? gx : gy).matrixTransform(el.getScreenCTM()!);
+      return { x: p.x, y: p.y };
+    },
+    [x, y] as const,
+  );
+}
+
+export async function tapBoardAt(page: Page, x: number, y: number) {
+  const pt = await boardPoint(page, x, y);
+  await page.mouse.click(pt.x, pt.y);
+}
+
+/** Kéo đỉnh v (đang ở from) tới (x, y) bằng chuột: nhấn, di qua nhiều bước, thả. */
+export async function dragVertex(page: Page, from: { x: number; y: number }, x: number, y: number) {
+  const a = await boardPoint(page, from.x, from.y);
+  const b = await boardPoint(page, x, y);
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(b.x, b.y, { steps: 8 });
+  await page.mouse.up();
+}
+
+async function solveUntangle(page: Page, level: UntangleLevel) {
+  const g = makeGraph(level.graph);
+  if (level.expect === "nonplanar") {
+    const proof = validProofs(g)[0];
+    await press(page, "Không phẳng");
+    await page.getByRole("radio", { name: PROOF_OPTIONS.find((o) => o.kind === proof.kind)!.label }).check();
+    if (proof.kind === "k5") for (const v of proof.vertices) await tapVertex(page, v);
+    if (proof.kind === "k33") {
+      // nhóm 1 đã đủ 3 đỉnh thì lần chạm đầu xếp thẳng vào nhóm 2
+      for (const v of [...proof.a, ...proof.b]) await tapVertex(page, v);
+    }
+    await press(page, "Xác nhận không phẳng");
+    return;
+  }
+  // dời lần lượt từng đỉnh về lời giải (thứ tự đỉnh luôn tránh được khoảng cách tối thiểu, xem tests/unit/ch48.test.ts)
+  const pos: Positions = Object.fromEntries(g.vertices.map((v) => [v.id, { x: v.x, y: v.y }]));
+  const faces = page.getByRole("spinbutton", { name: "Số miền f" });
+  for (const v of g.vertices) {
+    const [x, y] = level.solution![v.id];
+    if (pos[v.id].x === x && pos[v.id].y === y) continue;
+    if (await faces.isVisible()) break;
+    await tapVertex(page, v.id);
+    await tapBoardAt(page, x, y);
+    pos[v.id] = { x, y };
+  }
+  await faces.fill(String(faceCount(g)));
+  await press(page, "Trả lời");
+}
+
+async function solveTeams(page: Page, level: TwoTeamsLevel) {
+  const g = makeGraph(level.graph);
+  const bp = bipartition(g);
+  if (!bp.ok) {
+    await press(page, "Không chia được");
+    for (const v of bp.oddCycle) await tapVertex(page, v);
+    await tapVertex(page, bp.oddCycle[0]);
+    await press(page, "Xác nhận vòng lẻ");
+    return;
+  }
+  for (const [team, side] of [["X", 0], ["Y", 1]] as const) {
+    await page.getByRole("radio", { name: new RegExp(`^Đội ${team}`) }).check();
+    for (const v of g.vertices) if (bp.side[v.id] === side) await tapVertex(page, v.id);
+  }
+  await press(page, "Kiểm tra");
+}
+
+async function solveFlow(page: Page, level: MaxFlowLevel) {
+  const g = makeGraph(level.graph);
+  const ek = edmondsKarp(g, level.source, level.sink, level.initialFlow ?? {});
+  for (const p of ek.paths) {
+    for (const v of p.vertices.slice(1)) await tapVertex(page, v);
+    await expect(page.getByRole("spinbutton", { name: "Lượng bơm" })).toHaveValue(String(p.amount));
+    await press(page, "Bơm");
+  }
+  await press(page, "Đã cực đại");
+  for (const v of ek.minCut) if (v !== level.source) await tapVertex(page, v);
+  await press(page, "Xác nhận nút thắt");
 }

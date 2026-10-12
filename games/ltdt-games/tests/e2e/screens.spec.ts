@@ -18,6 +18,9 @@ const SHORT: Record<string, string> = {
   greedy_order: "ch5-greedy",
   dijkstra: "ch6-dijkstra",
   muddy_city: "ch7-muddy-city",
+  untangle: "ch4-untangle",
+  two_teams: "ch4-two-teams",
+  max_flow: "ch8-max-flow",
 };
 
 for (const size of SIZES) {

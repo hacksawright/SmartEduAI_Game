@@ -1,13 +1,15 @@
 // Khả năng truy cập: chơi trọn màn chỉ bằng bàn phím, mọi điều khiển có tên, viền focus, giảm chuyển động.
 
 import { expect, test, type Page } from "@playwright/test";
+import { bipartition } from "../../src/core/algorithms/bipartite";
+import { optimalGreedyOrder } from "../../src/core/algorithms/coloring";
 import { findEulerTrail } from "../../src/core/algorithms/euler";
 import { kruskal } from "../../src/core/algorithms/spanningTree";
 import { targetKeys } from "../../src/core/games/matrixTranslate";
 import { makeGraph } from "../../src/core/graph";
 import type { MatrixLevel, MuddyLevel } from "../../src/core/levels/types";
 import { allLevels, getLevel } from "../../src/core/registry";
-import { expectResult, openLevel, solveLevel, userFor, watchProblems } from "./play";
+import { expectResult, openLevel, press, tapVertex, userFor, watchProblems } from "./play";
 
 /** Các điều khiển đang hiện mà không có tên đọc được cho trình đọc màn hình. */
 async function unnamedControls(page: Page): Promise<string[]> {
@@ -77,6 +79,36 @@ test("Một nét vẽ: chơi trọn màn bằng bàn phím (Tab tới đỉnh, E
   expect(problems).toEqual([]);
 });
 
+test("Gỡ rối: dời đỉnh bằng phím mũi tên, focus ở lại trên đỉnh", async ({ page }, info) => {
+  const problems = watchProblems(page);
+  await openLevel(page, "ch4-l01", userFor(info, "kbd-untangle"));
+  const v = page.locator('[role="button"][data-vertex="4"]');
+  await v.focus();
+  const before = await v.getAttribute("transform");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Shift+ArrowUp");
+  await expect(page.locator(".lg-mstats__value").nth(1)).toHaveText("2 lần");
+  expect(await v.getAttribute("transform")).not.toBe(before);
+  await expect.poll(() => page.evaluate(() => document.activeElement?.getAttribute("data-vertex"))).toBe("4");
+  expect(problems).toEqual([]);
+});
+
+test("Chia đội: xếp đội bằng phím X / Y trên từng đỉnh", async ({ page }, info) => {
+  const problems = watchProblems(page);
+  const level = getLevel("ch4-l09")!;
+  await openLevel(page, level.id, userFor(info, "kbd-teams"));
+  const bp = bipartition(makeGraph(level.graph));
+  if (!bp.ok) throw new Error("màn ch4-l09 phải chia được");
+  for (const [v, side] of Object.entries(bp.side)) {
+    await page.locator(`[role="button"][data-vertex="${v}"]`).focus();
+    await page.keyboard.press(side === 0 ? "x" : "y");
+  }
+  await page.getByRole("button", { name: "Kiểm tra", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  await expectResult(page, 3);
+  expect(problems).toEqual([]);
+});
+
 test("Thành phố bùn: lát đường bằng phím Space", async ({ page }, info) => {
   const problems = watchProblems(page);
   const level = getLevel("ch7-l01") as MuddyLevel;
@@ -128,11 +160,13 @@ test.describe("Giảm chuyển động theo hệ điều hành", () => {
     const level = getLevel("ch5-l01")!;
     await openLevel(page, level.id, userFor(info, "rm"));
     await expect(page.locator(".lg-root")).toHaveAttribute("data-motion", "reduced");
+    for (const v of optimalGreedyOrder(makeGraph(level.graph))) await tapVertex(page, v);
+    // không bấm "Tô nhanh": đo đúng hoạt cảnh. Giảm chuyển động: 60 ms/bước + 300 ms, khoảng 0,8 giây
+    // cho 8 đỉnh; bình thường: 300–460 ms/bước + 1,1 giây, khoảng 4,6 giây.
     const t0 = Date.now();
-    await solveLevel(page, level);
+    await press(page, "Chạy Greedy");
     await expectResult(page, 3);
-    // Greedy chạy từng bước 60 ms khi giảm chuyển động: kết quả phải hiện nhanh
-    expect(Date.now() - t0).toBeLessThan(6_000);
+    expect(Date.now() - t0).toBeLessThan(3_000);
     const anim = await page.locator(".lg-result__title").evaluate((el) => getComputedStyle(el).animationDuration);
     expect(["0s", "0.001s", "1ms"]).toContain(anim);
     // pháo giấy không vẽ gì: canvas trống

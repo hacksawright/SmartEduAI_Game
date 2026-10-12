@@ -2,11 +2,12 @@
 // đồng bộ tiến độ từ server khi đổi máy, xóa tiến độ trên máy mà vẫn giữ điểm thưởng.
 
 import { expect, test, type Page } from "@playwright/test";
+import { edmondsKarp } from "../../src/core/algorithms/maxFlow";
 import { createBfsEngine } from "../../src/core/engines/bfsEngine";
 import { makeGraph } from "../../src/core/graph";
-import type { TraversalLevel } from "../../src/core/levels/types";
+import type { MaxFlowLevel, TraversalLevel, UntangleLevel } from "../../src/core/levels/types";
 import { getLevel } from "../../src/core/registry";
-import { expectResult, openLevel, press, solveLevel, tapVertex, userFor, watchProblems } from "./play";
+import { dragVertex, expectResult, openLevel, press, solveLevel, tapBoardAt, tapVertex, userFor, watchProblems } from "./play";
 
 /** Lời giải BFS bỏ qua `skip` câu đầu (đã được thực thi sau khi bấm Tiếp tục). */
 async function solveBfsFrom(page: Page, level: TraversalLevel, skip: number) {
@@ -156,5 +157,78 @@ test("Xóa tiến độ trên máy: sao và màn đã mở bị xóa, điểm th
   await expect(page.getByTitle("Điểm thưởng")).toHaveText("30 điểm");
   await page.getByRole("button", { name: /^Chương 6: Tôi là Dijkstra/ }).click();
   await expect(page.getByRole("button", { name: /^D2: .*Chưa mở/ })).toBeDisabled();
+  expect(problems).toEqual([]);
+});
+
+/** Ô số liệu theo nhãn ("Giao cắt", "Lỗi"…) trong panel. */
+const stat = (page: Page, label: string) =>
+  page.locator(".lg-mstats__cell").filter({ has: page.locator(".lg-mstats__label", { hasText: label }) }).locator(".lg-mstats__value");
+
+test("Gỡ rối: kéo-thả đỉnh, thả sát đỉnh khác bị từ chối, sai số miền tính 1 lỗi", async ({ page }, info) => {
+  const problems = watchProblems(page);
+  const level = getLevel("ch4-l01") as UntangleLevel;
+  const g = makeGraph(level.graph);
+  await openLevel(page, level.id, userFor(info, "untangle"));
+  const start = Object.fromEntries(g.vertices.map((v) => [v.id, { x: v.x, y: v.y }]));
+  const sol = level.solution!;
+
+  // kéo đỉnh 1 tới chỗ trong lời giải
+  await dragVertex(page, start["1"], sol["1"][0], sol["1"][1]);
+  await expect(stat(page, "Đã dời")).toHaveText("1 lần");
+  // thả đỉnh 2 sát đỉnh 1: bị từ chối, không tính lần dời
+  await dragVertex(page, start["2"], sol["1"][0] + 20, sol["1"][1] + 20);
+  await expect(page.locator(".lg-osnote").filter({ hasText: "Không đặt 2 sát đỉnh 1" })).toBeVisible();
+  await expect(stat(page, "Đã dời")).toHaveText("1 lần");
+
+  // các đỉnh còn lại: chạm đỉnh rồi chạm chỗ trống
+  for (const v of ["2", "3", "4", "5", "6"]) {
+    await tapVertex(page, v);
+    await tapBoardAt(page, sol[v][0], sol[v][1]);
+  }
+  await expect(stat(page, "Giao cắt")).toHaveText("0");
+  const faces = page.getByRole("spinbutton", { name: "Số miền f" });
+  await faces.fill("4");
+  await press(page, "Trả lời");
+  await expect(page.getByRole("alert")).toContainText("Có thể bạn quên miền bên ngoài");
+  await expect(stat(page, "Lỗi")).toHaveText("1");
+  await faces.fill("5");
+  await press(page, "Trả lời");
+  await expectResult(page, 2);
+  expect(problems).toEqual([]);
+});
+
+test("Chia đội: Kiểm tra khi chưa xếp hết không tính lỗi; cặp cùng đội tính 1 lỗi và được đánh dấu", async ({ page }, info) => {
+  const problems = watchProblems(page);
+  const level = getLevel("ch4-l09")!;
+  await openLevel(page, level.id, userFor(info, "teams"));
+  await press(page, "Kiểm tra");
+  await expect(page.locator(".lg-osnote").filter({ hasText: "Còn 6 bạn chưa có đội" })).toBeVisible();
+  await expect(stat(page, "Lỗi")).toHaveText("0");
+  for (const v of ["1", "2", "3", "4", "5", "6"]) await tapVertex(page, v);
+  await press(page, "Kiểm tra");
+  await expect(page.getByRole("alert")).toContainText("cặp hay cãi nhau đang cùng đội");
+  await expect(stat(page, "Lỗi")).toHaveText("1");
+  await expect(page.locator(".lg-elabel--error")).toHaveCount(5);
+  await press(page, "Xếp lại");
+  await solveLevel(page, level);
+  await expectResult(page, 2);
+  expect(problems).toEqual([]);
+});
+
+test("Ống nước: báo cực đại quá sớm tính 1 lỗi; đi ngược ống để trả nước rồi tìm nút thắt", async ({ page }, info) => {
+  const problems = watchProblems(page);
+  const level = getLevel("ch8-l03") as MaxFlowLevel;
+  await openLevel(page, level.id, userFor(info, "flow"));
+  await press(page, "Đã cực đại");
+  await expect(page.getByRole("alert")).toContainText("Chưa cực đại");
+  await expect(stat(page, "Lỗi")).toHaveText("1");
+  // đi xuôi ống đã đầy bị chặn, có lý do
+  await tapVertex(page, "a");
+  await expect(page.locator(".lg-osnote").filter({ hasText: "Ống s → a đã đầy (3/3)" })).toBeVisible();
+  // lời giải Edmonds–Karp từ luồng có sẵn phải đi ngược ống a → b (b rồi tới a)
+  const ek = edmondsKarp(makeGraph(level.graph), level.source, level.sink, level.initialFlow);
+  expect(ek.paths.some((p) => p.vertices.join(" ").includes("b a"))).toBe(true);
+  await solveLevel(page, level);
+  await expectResult(page, 2);
   expect(problems).toEqual([]);
 });

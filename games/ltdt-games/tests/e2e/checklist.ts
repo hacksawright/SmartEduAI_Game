@@ -50,6 +50,19 @@ export function uiChecklist(page: Page): Promise<string[]> {
           if (gap < GAP - 0.5) out.push(`hai vùng chạm sát nhau (${gap.toFixed(1)} px): ${name(a)} và ${name(b)}`);
         }
 
+    // thanh nút dưới màn chơi: kể cả nút đang khóa, không được đè nhau, tràn khỏi màn hình hay bị cắt chữ
+    const bar = [...document.querySelectorAll(".lg-controls button")].filter(visible);
+    for (let i = 0; i < bar.length; i++) {
+      const ra = bar[i].getBoundingClientRect();
+      if (ra.left < -0.5 || ra.right > innerWidth + 0.5) out.push(`nút tràn khỏi màn hình: ${name(bar[i])}`);
+      if (bar[i].scrollWidth > bar[i].clientWidth + 1) out.push(`chữ trong nút bị cắt: ${name(bar[i])}`);
+      for (let j = i + 1; j < bar.length; j++) {
+        const rb = bar[j].getBoundingClientRect();
+        if (Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left) > 0.5 && Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top) > 0.5)
+          out.push(`hai nút đè nhau: ${name(bar[i])} và ${name(bar[j])}`);
+      }
+    }
+
     type RGBA = { r: number; g: number; b: number; a: number };
     const parse = (c: string): RGBA | null => {
       const m = c.match(/rgba?\(([^)]+)\)/);

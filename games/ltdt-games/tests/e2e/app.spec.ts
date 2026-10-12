@@ -37,6 +37,7 @@ test("Nút quay lại trong màn chơi về danh sách màn của game", async (
 });
 
 test("Bố cục và checklist UI (mục 7.5) trên mọi màn hình và mọi màn chơi", async ({ page }, info) => {
+  test.slow(); // đi qua cả 64 màn thường và 13 màn đua
   const problems = watchProblems(page);
   expect(await auditAll(page, userFor(info, "layout"))).toEqual([]);
   expect(problems).toEqual([]);
@@ -52,6 +53,7 @@ for (const viewport of [
 
     test("bố cục và checklist UI", async ({ page }, info) => {
       test.skip(info.project.name !== "desktop", "đã đủ khi chạy trong project desktop");
+      test.slow();
       const problems = watchProblems(page);
       expect(await auditAll(page, userFor(info, `tab${viewport.width}`))).toEqual([]);
       expect(problems).toEqual([]);

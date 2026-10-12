@@ -97,6 +97,8 @@ test.describe("CSS toàn cục của trang chủ không làm đổi giao diện 
       for (const hostile of [false, true]) {
         const user = userFor(info, "embed-css");
         await mount(page, hostUrl({ user, route, hostile, unlockAll: step !== "locked" }));
+        // giao diện màn chơi là chunk tải sau (React.lazy): chờ nó hiện rồi mới đo
+        if (step === "intro") await expect(page.getByRole("button", { name: "Bắt đầu", exact: true })).toBeVisible();
         if (step === "start") {
           await press(page, "Bắt đầu");
           await expect(page.locator('[aria-modal="true"]')).toHaveCount(0);

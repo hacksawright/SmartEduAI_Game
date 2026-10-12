@@ -1,7 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// E2E chạy trên `npm run dev` (có mock API điểm ở /api/v1). Đang có dev server ở cổng 5199 thì dùng lại.
-const PORT = 5199;
+// E2E chạy trên `npm run dev` (có mock API điểm ở /api/v1). Đang có dev server ở cổng 5199 thì dùng lại;
+// cổng đó đang bận bởi bản khác thì đặt LTDT_E2E_PORT.
+const PORT = Number(process.env.LTDT_E2E_PORT ?? 5199);
 
 export default defineConfig({
   testDir: "tests/e2e",
