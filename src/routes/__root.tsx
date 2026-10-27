@@ -41,7 +41,7 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
           <button onClick={() => { router.invalidate(); reset(); }} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
             Thử lại
           </button>
-          <a href="/" className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent">Về trang chủ</a>
+          <a href={import.meta.env.BASE_URL} className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent">Về trang chủ</a>
         </div>
       </div>
     </div>

@@ -8,7 +8,8 @@
 //   không đọc hay ghi bảng nào của Supabase, nên không đụng điểm tuần và bảng xếp hạng tuần.
 import { LTDT_BUILD_ID } from "./ltdt-build";
 
-export const LTDT_BASE_PATH = "/games/ltdt/";
+// gắn prefix GAME_BASE_PATH (vd /code/game/) khi app chạy sau reverse proxy
+export const LTDT_BASE_PATH = `${import.meta.env.BASE_URL}games/ltdt/`;
 
 /** Các trường của GamesConfig (games/ltdt-games/docs/INTEGRATION.md, mục 2.3) mà SmartEdu dùng. */
 export interface LtdtGamesConfig {
