@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { getAicodeSession } from "@/integrations/aicode/session";
 
 interface Profile {
   id: string;
@@ -54,27 +55,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // THEN check existing session — if none, sign in anonymously so the user
-    // can access the app without registration.
-    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
-      if (!s) {
-        const { data, error } = await supabase.auth.signInAnonymously();
-        if (error) {
-          console.error("Anonymous sign-in failed", error);
-          setLoading(false);
+    // THEN sync with the AICode account on every load: the AICode user may have
+    // logged out or switched accounts since the Supabase session was stored.
+    (async () => {
+      try {
+        const result = await getAicodeSession();
+        if (result.status === "unauthenticated") {
+          await supabase.auth.signOut({ scope: "local" });
+          const target = new URL(result.loginUrl, window.location.href);
+          target.searchParams.set("message", "login_required");
+          target.searchParams.set("redirect", window.location.href);
+          window.location.assign(target.href);
           return;
         }
-        setSession(data.session);
-        setUser(data.user);
-        if (data.user) await loadProfile(data.user.id);
-        setLoading(false);
-        return;
+        if (result.status === "issued") {
+          const { error } = await supabase.auth.setSession({
+            access_token: result.accessToken,
+            refresh_token: result.refreshToken,
+          });
+          if (error) throw error;
+        }
+        const { data: { session: s } } = await supabase.auth.getSession();
+        setSession(s);
+        setUser(s?.user ?? null);
+        if (s?.user) await loadProfile(s.user.id);
+      } catch (error) {
+        console.error("AICode sign-in failed", error);
       }
-      setSession(s);
-      setUser(s.user);
-      await loadProfile(s.user.id);
       setLoading(false);
-    });
+    })();
 
     return () => subscription.unsubscribe();
   }, []);
