@@ -12,7 +12,9 @@ ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
 ENV VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY}
 
 COPY package.json package-lock.json* ./
-RUN npm ci --no-audit --no-fund
+# --include=dev: vite plugin nằm ở devDependencies; nếu môi trường build đặt NODE_ENV=production
+# hoặc npm omit=dev thì npm ci bỏ chúng và build lỗi "Cannot find package '@vitejs/plugin-react'".
+RUN npm ci --no-audit --no-fund --include=dev
 
 COPY . .
 RUN npm run build
