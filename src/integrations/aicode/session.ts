@@ -3,7 +3,7 @@
 // Game chạy cùng host với AICode (aicode.ptit.edu.vn/code/game), nên trình duyệt tự gửi kèm
 // cookie HttpOnly "token" của AICode lên server game. Server dùng cookie đó hỏi backend-java
 // (GET /profile) xem là ai, rồi cấp phiên Supabase cho user tương ứng:
-// mỗi userId AICode ↔ đúng một user Supabase có email <userId>@aicode.local.
+// mỗi userId AICode ↔ một user Supabase có email <userId>@aicode.ptit.edu.vn.
 // Không dùng service role key: server đăng ký/đăng nhập user bằng publishable key với mật khẩu
 // HMAC(AICODE_GAME_SECRET, userId) — chỉ server biết secret nên không ai đoán được mật khẩu.
 // Supabase cần bật Email sign-ups và TẮT "Confirm email" để signUp trả về phiên ngay.
@@ -13,7 +13,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { getCookie, getRequestHeader } from "@tanstack/react-start/server";
 import { createClient, type Session } from "@supabase/supabase-js";
 
-const EMAIL_DOMAIN = "aicode.local";
+const EMAIL_DOMAIN = "aicode.ptit.edu.vn";
+const LEGACY_EMAIL_DOMAIN = "aicode.local";
 
 export type AicodeSessionResult =
   // phiên Supabase trình duyệt đang giữ đã đúng user AICode — giữ nguyên
@@ -50,11 +51,11 @@ async function fetchAicodeUser(token: string): Promise<AicodeUser | null> {
   return { userId: match[1], role: match[2], fullName: match[3].trim() };
 }
 
-function emailFor(userId: string): string {
+function emailFor(userId: string, domain = EMAIL_DOMAIN): string {
   const local = userId.trim().toLowerCase();
   // userId AICode là mã SV/GV (chữ, số, . _ -) — chặn ký tự lạ để email luôn hợp lệ và không trùng
   if (!/^[a-z0-9._-]+$/.test(local)) throw new Error(`userId AICode không hợp lệ: ${userId}`);
-  return `${local}@${EMAIL_DOMAIN}`;
+  return `${local}@${domain}`;
 }
 
 function supabaseAnon() {
@@ -77,6 +78,17 @@ async function signInOrUp(email: string, aicode: AicodeUser): Promise<Session> {
   const signIn = await anon.auth.signInWithPassword({ email, password });
   if (signIn.data.session) return signIn.data.session;
   if (signIn.error && signIn.error.code !== "invalid_credentials") throw signIn.error;
+
+  // Reuse existing users so their profile/progress keeps the same Supabase ID.
+  // Never register new users with .local: Supabase rejects that email domain.
+  const legacy = await anon.auth.signInWithPassword({
+    email: emailFor(aicode.userId, LEGACY_EMAIL_DOMAIN),
+    password,
+  });
+  if (legacy.data.session) return legacy.data.session;
+  if (legacy.error && !["invalid_credentials", "email_address_invalid"].includes(legacy.error.code ?? "")) {
+    throw legacy.error;
+  }
 
   const { data, error } = await anon.auth.signUp({
     email,
@@ -128,7 +140,10 @@ export const getAicodeSession = createServerFn({ method: "POST" }).handler(
     if (!aicode) return { status: "unauthenticated", loginUrl: loginUrl() };
 
     const email = emailFor(aicode.userId);
-    if ((await currentSessionEmail()) === email) return { status: "current" };
+    const currentEmail = await currentSessionEmail();
+    if (currentEmail === email || currentEmail === emailFor(aicode.userId, LEGACY_EMAIL_DOMAIN)) {
+      return { status: "current" };
+    }
 
     return { status: "issued", ...(await issueSession(email, aicode)) };
   },

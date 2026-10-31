@@ -11,7 +11,7 @@ SmartEdu là ứng dụng học tập theo hình thức game hóa, tập trung v
 - **Hồ sơ học tập:** theo dõi XP, cấp độ, chuỗi ngày học, thống kê và huy hiệu.
 - **Thảo luận:** trao đổi trong từng bài học.
 - **Khóa học:** hiện chưa có nội dung; dành cho người phụ trách khóa học bổ sung sau.
-- **Đăng nhập bằng tài khoản AICode:** game dùng chung phiên đăng nhập với AICode (cookie `token`); chưa đăng nhập thì được chuyển sang trang đăng nhập AICode rồi quay lại. Mỗi tài khoản AICode ứng với một user Supabase `<userId>@aicode.local` (xem `src/integrations/aicode/session.ts`).
+- **Đăng nhập bằng tài khoản AICode:** game dùng chung phiên đăng nhập với AICode (cookie `token`); chưa đăng nhập thì được chuyển sang trang đăng nhập AICode rồi quay lại. Mỗi tài khoản AICode ứng với một user Supabase `<userId>@aicode.ptit.edu.vn` (xem `src/integrations/aicode/session.ts`).
 
 ## Công nghệ
 
