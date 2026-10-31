@@ -45,15 +45,14 @@ SmartEdu là ứng dụng học tập theo hình thức game hóa, tập trung v
    ```env
    SUPABASE_URL=https://<project-ref>.supabase.co
    SUPABASE_PUBLISHABLE_KEY=<publishable-or-anon-key>
-   SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 
    VITE_SUPABASE_URL=https://<project-ref>.supabase.co
    VITE_SUPABASE_PUBLISHABLE_KEY=<publishable-or-anon-key>
    ```
 
-   Thay các giá trị mẫu bằng URL và key của project Supabase. Hai biến `VITE_*` cần trùng với URL và publishable/anon key tương ứng ở phía server. **Không đưa `SUPABASE_SERVICE_ROLE_KEY` vào biến `VITE_*`, mã client hoặc repository công khai**: service role key chỉ dành cho server.
+   Thay các giá trị mẫu bằng URL và key của project Supabase. Hai biến `VITE_*` cần trùng với URL và publishable/anon key tương ứng ở phía server.
 
-3. Điền `SUPABASE_SERVICE_ROLE_KEY` (bắt buộc — server dùng để tạo user và cấp phiên cho tài khoản AICode) cùng `AICODE_AUTH_INTERNAL_URL`, `AICODE_LOGIN_URL` trong `.env`. Không cần bật Anonymous Sign-Ins.
+3. Điền `AICODE_GAME_SECRET` (bắt buộc, chỉ ở server — dùng sinh mật khẩu Supabase cho tài khoản AICode; không đổi sau khi đã có user) cùng `AICODE_AUTH_INTERNAL_URL`, `AICODE_LOGIN_URL` trong `.env`. Không cần service role key. Trong Supabase (Authentication → Providers → Email) bật Email sign-ups và **tắt "Confirm email"**. Không cần bật Anonymous Sign-Ins.
 
 4. Chạy các migration trong `supabase/migrations` theo thứ tự tên file để tạo/cập nhật schema:
 
@@ -88,7 +87,7 @@ Lần đầu chạy e2e cần cài trình duyệt: `npx playwright install chrom
 
 ## Deploy
 
-Repo có cấu hình `vercel.json` và build bằng `npm run build`. Khi deploy lên Vercel, khai báo các biến môi trường Supabase như phần chạy local trong Project Settings → Environment Variables, sau đó deploy. Giữ `SUPABASE_SERVICE_ROLE_KEY` ở môi trường server; không dùng nó trong trình duyệt.
+Repo có cấu hình `vercel.json` và build bằng `npm run build`. Khi deploy lên Vercel, khai báo các biến môi trường Supabase như phần chạy local trong Project Settings → Environment Variables, sau đó deploy. Giữ `AICODE_GAME_SECRET` ở môi trường server; không dùng nó trong trình duyệt.
 
 ## Cấu trúc chính
 

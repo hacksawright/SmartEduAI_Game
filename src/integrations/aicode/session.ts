@@ -4,11 +4,14 @@
 // cookie HttpOnly "token" của AICode lên server game. Server dùng cookie đó hỏi backend-java
 // (GET /profile) xem là ai, rồi cấp phiên Supabase cho user tương ứng:
 // mỗi userId AICode ↔ đúng một user Supabase có email <userId>@aicode.local.
-// Trình duyệt không bao giờ thấy service role key hay token AICode.
+// Không dùng service role key: server đăng ký/đăng nhập user bằng publishable key với mật khẩu
+// HMAC(AICODE_GAME_SECRET, userId) — chỉ server biết secret nên không ai đoán được mật khẩu.
+// Supabase cần bật Email sign-ups và TẮT "Confirm email" để signUp trả về phiên ngay.
+// Trình duyệt không bao giờ thấy secret, mật khẩu hay token AICode.
+import { createHmac } from "node:crypto";
 import { createServerFn } from "@tanstack/react-start";
 import { getCookie, getRequestHeader } from "@tanstack/react-start/server";
-import { createClient } from "@supabase/supabase-js";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { createClient, type Session } from "@supabase/supabase-js";
 
 const EMAIL_DOMAIN = "aicode.local";
 
@@ -54,51 +57,67 @@ function emailFor(userId: string): string {
   return `${local}@${EMAIL_DOMAIN}`;
 }
 
-async function ensureSupabaseUser(email: string, aicode: AicodeUser): Promise<void> {
-  const { error } = await supabaseAdmin.auth.admin.createUser({
+function supabaseAnon() {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) throw new Error("Thiếu SUPABASE_URL hoặc SUPABASE_PUBLISHABLE_KEY");
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+
+function passwordFor(userId: string): string {
+  const secret = process.env.AICODE_GAME_SECRET;
+  if (!secret) throw new Error("Thiếu AICODE_GAME_SECRET");
+  return createHmac("sha256", secret).update(`smartedu-game:${userId}`).digest("hex");
+}
+
+async function signInOrUp(email: string, aicode: AicodeUser): Promise<Session> {
+  const anon = supabaseAnon();
+  const password = passwordFor(aicode.userId);
+
+  const signIn = await anon.auth.signInWithPassword({ email, password });
+  if (signIn.data.session) return signIn.data.session;
+  if (signIn.error && signIn.error.code !== "invalid_credentials") throw signIn.error;
+
+  const { data, error } = await anon.auth.signUp({
     email,
-    email_confirm: true,
+    password,
     // trigger handle_new_user lấy full_name từ metadata để tạo profiles
-    user_metadata: { full_name: aicode.fullName || aicode.userId, aicode_user_id: aicode.userId },
+    options: { data: { full_name: aicode.fullName || aicode.userId, aicode_user_id: aicode.userId } },
   });
-  if (error && error.code !== "email_exists") throw error;
+  if (error) throw error;
+  if (!data.session) {
+    // email đã tồn tại với mật khẩu khác, hoặc Supabase đang bật "Confirm email"
+    throw new Error(`Không tạo được phiên Supabase cho ${email}`);
+  }
+  return data.session;
 }
 
 async function issueSession(
   email: string,
-  fullName: string,
+  aicode: AicodeUser,
 ): Promise<{ accessToken: string; refreshToken: string }> {
-  // Magic link chỉ sinh ở server và đổi ngay thành phiên — không gửi email nào.
-  const { data: link, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-    type: "magiclink",
-    email,
-  });
-  if (linkError) throw linkError;
-
-  const anon = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  const { data, error } = await anon.auth.verifyOtp({
-    type: "magiclink",
-    token_hash: link.properties.hashed_token,
-  });
-  if (error || !data.session) throw error ?? new Error("Supabase không trả về phiên đăng nhập");
+  const session = await signInOrUp(email, aicode);
 
   // Họ tên và bỏ qua onboarding luôn theo AICode — game không hỏi lại tên.
-  const { error: profileError } = await supabaseAdmin
+  // Cập nhật bằng chính phiên của user (RLS "Users update own profile").
+  const userClient = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${session.access_token}` } },
+  });
+  const { error: profileError } = await userClient
     .from("profiles")
-    .update({ full_name: fullName, onboarding_completed: true })
-    .eq("id", data.session.user.id);
+    .update({ full_name: aicode.fullName || aicode.userId, onboarding_completed: true })
+    .eq("id", session.user.id);
   if (profileError) throw profileError;
 
-  return { accessToken: data.session.access_token, refreshToken: data.session.refresh_token };
+  return { accessToken: session.access_token, refreshToken: session.refresh_token };
 }
 
 async function currentSessionEmail(): Promise<string | null> {
   // attachSupabaseAuth (src/start.ts) gắn access token Supabase hiện tại vào mọi lời gọi serverFn
   const bearer = getRequestHeader("authorization")?.replace(/^Bearer\s+/i, "");
   if (!bearer) return null;
-  const { data } = await supabaseAdmin.auth.getUser(bearer);
+  const { data } = await supabaseAnon().auth.getUser(bearer);
   return data.user?.email ?? null;
 }
 
@@ -111,7 +130,6 @@ export const getAicodeSession = createServerFn({ method: "POST" }).handler(
     const email = emailFor(aicode.userId);
     if ((await currentSessionEmail()) === email) return { status: "current" };
 
-    await ensureSupabaseUser(email, aicode);
-    return { status: "issued", ...(await issueSession(email, aicode.fullName || aicode.userId)) };
+    return { status: "issued", ...(await issueSession(email, aicode)) };
   },
 );
